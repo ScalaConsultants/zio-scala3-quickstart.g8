@@ -1,2 +1,5 @@
 *.class
 *.log
+.DS_STORE
+.metals/
+.vscode/
