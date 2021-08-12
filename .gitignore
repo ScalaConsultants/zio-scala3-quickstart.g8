@@ -11,3 +11,4 @@ logs/
 .bloop/
 project/.bloop/
 project/metals.sbt
+.bsp/

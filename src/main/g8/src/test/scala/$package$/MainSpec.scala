@@ -2,7 +2,7 @@ package $package$
 
 import zio.test.Assertion.equalTo
 import zio.test.junit.JUnitRunnableSpec
-import zio.test.{ assert, suite, test }
+import zio.test.{assert, suite, test}
 
 object MainSpec extends JUnitRunnableSpec:
 

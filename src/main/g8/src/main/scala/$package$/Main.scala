@@ -1,18 +1,14 @@
 package $package$
 
-import java.io.IOException
+import zhttp.http._
+import zhttp.service.Server
+import zio._
 
-import zio.{ App, ExitCode, URIO, ZEnv, ZIO }
-import zio.console.{ getStrLn, putStrLn, Console }
+object HelloWorld extends zio.App:
 
-object Main extends App:
+  val healthCheck: HttpApp[Any, Nothing] = HttpApp.collect {
+    case Method.GET -> Root / "health" => Response.status(Status.OK)
+  }
 
-  val app: ZIO[Console, IOException, Unit] =
-    for
-      _    <- putStrLn("What is your name?")
-      name <- getStrLn
-      out  <- putStrLn(s"Hello \$name!")
-    yield out
-
-  def run(args: List[String]): URIO[ZEnv, ExitCode] =
-    app.exitCode
+  def run(args: List[String]) =
+    Server.start(8080, healthCheck).exitCode
