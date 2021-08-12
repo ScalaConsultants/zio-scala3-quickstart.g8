@@ -15,14 +15,15 @@ lazy val root = (project in file(".")).
         scalaVersion := "$dotty_version$",
       )
     ),
+    name := "$name$",
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio"               % zioVersion,
       "dev.zio" %% "zio-streams"       % zioVersion,
       "io.d11"  %% "zhttp"             % zioHttpVersion,
       //TODO add below based on add_zio_kafka=yes condition in default.properties
       //"dev.zio" %% "zio-kafka"         % zioKafkaVersion,
-      //"dev.zio" %% "zio-config" % zioConfigVersion,
-      //"dev.zio" %% "zio-logging" % zioLoggingVersion,
+//      "dev.zio" %% "zio-config" % zioConfigVersion,
+//      "dev.zio" %% "zio-logging" % zioLoggingVersion,
 //      "dev.zio" %% "zio-logging-slf4j" % zioLoggingVersion,
       "dev.zio" %% "zio-json"          % zioJsonVersion,
       "dev.zio" %% "zio-test"          % zioVersion % Test,
@@ -32,4 +33,4 @@ lazy val root = (project in file(".")).
       
     ),
     testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework"))
-  )
+  ).enablePlugins(JavaAppPackaging)
