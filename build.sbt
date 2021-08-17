@@ -1,9 +1,10 @@
 val zioVersion = "1.0.10"
 val zioHttpVersion = "1.0.0.0-RC17"
 val zioJsonVersion = "0.2.0-M1"
-//val zioConfigVersion = "1.0.6"
-//val zioLoggingVersion = "0.5.11"
-// val zioKafkaVersion = "0.15.0"
+
+val zioConfigVersion = "1.0.6"
+val zioLoggingVersion = "0.5.11"
+val zioKafkaVersion = "0.15.0"
 
 // This build is for this Giter8 template.
 // To test the template run `g8` or `g8Test` from the sbt session.
@@ -11,11 +12,13 @@ val zioJsonVersion = "0.2.0-M1"
 lazy val root = (project in file("."))
   .enablePlugins(ScriptedPlugin)
   .settings(
+    resolvers += "Sonatype OSS Snapshots s01" at "https://s01.oss.sonatype.org/content/repositories/snapshots" ,
     name := "zio-quickstart",
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio" % zioVersion,
       "dev.zio" %% "zio-streams" % zioVersion,
       "io.d11" %% "zhttp" % zioHttpVersion,
+      "io.d11"  %% "zhttp-test"        % "1.0.0.0-RC17+37-1c8ceea7-SNAPSHOT" % Test,
 //      "dev.zio" %% "zio-config" % zioConfigVersion,
 //      "dev.zio" %% "zio-logging" % zioLoggingVersion,
 //      "dev.zio" %% "zio-logging-slf4j" % zioLoggingVersion,
