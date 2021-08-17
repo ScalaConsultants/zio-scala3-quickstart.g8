@@ -65,7 +65,6 @@ object itemservice:
         private def formatId(id: String): IO[DomainError, Long] =
           ZIO.fromOption(id.toLongOption).mapError(_ => BusinessError(s"Id \${id} is in incorrect form."))
       }
-    
 
     val live: ZLayer[ItemRepo, Nothing, BusinessLogic] =
       ZLayer.fromService(repo => Service.live(repo))
@@ -83,5 +82,4 @@ object itemservice:
 
     def updateItem(id: String, description: String): ZIO[BusinessLogic, DomainError, Unit] =
       ZIO.accessM(_.get.updateItem(id, description))
-  
 

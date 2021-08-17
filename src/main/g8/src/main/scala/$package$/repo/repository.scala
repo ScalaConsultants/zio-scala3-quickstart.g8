@@ -26,56 +26,45 @@ object itemrepository:
       def getByIds(ids: Set[ItemId]): IO[RepositoryError, List[Item]]
 
       def update(id: ItemId, item: Item): IO[RepositoryError, Unit]
-    
 
     object Service:
       // TODO switch Random with some DBClient and store to DB not to in memory Map
       // TODO switch console with zio-logging
-      def live(random: Random.Service, console: Console.Service): Service = new Service {
-
-        private lazy val data = Ref.make[Map[Long, Item]](Map.empty)
+      def live(random: Random.Service, console: Console.Service, dataRef: Ref[Map[ItemId, Item]]): Service = new Service {
 
         def add(description: String): IO[RepositoryError, ItemId] =
           for {
-            itemId <- random.nextLong
-            ref    <- data
+            itemId <- random.nextLong.map(_.abs)
             id = ItemId(itemId)
-            _ <- ref.update(map => map + (itemId -> Item(id, description)))
+            _ <- dataRef.update(map => map + (id -> Item(id, description)))
           } yield id
 
         def delete(id: ItemId): IO[RepositoryError, Unit] =
-          for {
-            ref <- data
-            _   <- ref.update(map => map - id.value)
-          } yield ()
+          dataRef.update(map => map - id)
 
         def getAll(): IO[RepositoryError, List[Item]] =
           for {
-            ref      <- data
-            itemsMap <- ref.get
+            itemsMap <- dataRef.get
           } yield (itemsMap.view.values.toList)
 
         def getById(id: ItemId): IO[RepositoryError, Option[Item]] =
           for {
-            ref    <- data
-            values <- ref.get
-          } yield (values.get(id.value))
+            values <- dataRef.get
+          } yield (values.get(id))
 
         def getByIds(ids: Set[ItemId]): IO[RepositoryError, List[Item]] =
           for {
-            ref    <- data
-            values <- ref.get
+            values <- dataRef.get
           } yield (values.filter(id => ids.map(_.value).contains(id._1)).view.values.toList)
 
         def update(id: ItemId, item: Item): IO[RepositoryError, Unit] =
           for {
-            ref <- data
-            _   <- ref.update(map => map + (id.value -> item.copy(id = id)))
+            _   <- dataRef.update(map => map + (id -> item.copy(id = id)))
           } yield ()
       }
 
     val live: ZLayer[Random with Console, Nothing, ItemRepo] =
-      ZLayer.fromServices((random, console) => Service.live(random, console))
+      ZLayer.fromServicesM[Random.Service, Console.Service, Any, Nothing, ItemRepo.Service]((random, console) => Ref.make(Map.empty[ItemId, Item]).map(data => Service.live(random, console, data)))
 
     def add(description: String): ZIO[ItemRepo, RepositoryError, ItemId] = ZIO.accessM(_.get.add(description))
 
