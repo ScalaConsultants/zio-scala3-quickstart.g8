@@ -55,12 +55,10 @@ object itemrepository:
         def getByIds(ids: Set[ItemId]): IO[RepositoryError, List[Item]] =
           for {
             values <- dataRef.get
-          } yield (values.filter(id => ids.map(_.value).contains(id._1)).view.values.toList)
+          } yield (values.filter(id => ids.contains(id._1)).view.values.toList)
 
         def update(id: ItemId, item: Item): IO[RepositoryError, Unit] =
-          for {
-            _   <- dataRef.update(map => map + (id -> item.copy(id = id)))
-          } yield ()
+          dataRef.update(map => map + (id -> item.copy(id = id)))
       }
 
     val live: ZLayer[Random with Console, Nothing, ItemRepo] =
