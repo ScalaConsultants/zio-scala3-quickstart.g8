@@ -1,11 +1,12 @@
 package $package$.service
 
 import zio._
+import zio.stream._
 import $package$.domain._
 import $package$.domain.DomainError.BusinessError
 import $package$.repo._
 
-final case class ItemServiceLive(repo: ItemRepository) extends ItemService:
+final case class ItemServiceLive(repo: ItemRepository, subscriber: SubscriberService) extends ItemService:
   def addItem(description: String): IO[DomainError, ItemId] =
     repo.add(description)
 
@@ -13,7 +14,11 @@ final case class ItemServiceLive(repo: ItemRepository) extends ItemService:
     for
       itemId <- formatId(id).map(ItemId(_))
       _ <- repo.delete(itemId)
+      _ <- subscriber.publishDeleteEvents(itemId)
     yield ()
+
+  def deletedEvents(): Stream[Nothing, ItemId] =
+    subscriber.showDeleteEvents
 
   def getAllItems(): IO[DomainError, List[Item]] =
     repo.getAll()
@@ -43,5 +48,5 @@ final case class ItemServiceLive(repo: ItemRepository) extends ItemService:
     ZIO.fromOption(id.toLongOption).mapError(_ => BusinessError(s"Id \$id is in incorrect form."))
 
 object ItemServiceLive:
-  val layer: URLayer[Has[ItemRepository], Has[ItemService]] =
-    (ItemServiceLive(_)).toLayer
+  val layer: URLayer[Has[ItemRepository] with Has[SubscriberService], Has[ItemService]] =
+    (ItemServiceLive(_, _)).toLayer
