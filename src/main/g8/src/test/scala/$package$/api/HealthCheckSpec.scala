@@ -15,7 +15,7 @@ object HealthCheckSpec extends DefaultRunnableSpec:
 
   def spec =
     suite("health check")(
-      testM("ok status"){
+      testM("ok status") {
         val actual = HealthCheck.healthCheck(Request(Method.GET -> URL(Root / "health")))
         assertM(actual)(equalTo(Response.HttpResponse(Status.OK, List(), Empty)))
       }

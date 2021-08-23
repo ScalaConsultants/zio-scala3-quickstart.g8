@@ -17,7 +17,6 @@ object protocol:
   object GetItems:
     implicit val getItemsDecoder: JsonDecoder[GetItems] = DeriveJsonDecoder.gen[GetItems]
     implicit val getItemsEncoder: JsonEncoder[GetItems] = DeriveJsonEncoder.gen[GetItems]
-  
 
   final case class GetItem(id: Long, description: String)
   object GetItem:
@@ -27,4 +26,5 @@ object protocol:
   final case class GetItemIds(ids: Set[String])
   object GetItemIds:
     implicit val itemIdsDecoder: JsonDecoder[GetItemIds] = DeriveJsonDecoder.gen[GetItemIds]
+    implicit val itemIdsEncoder: JsonEncoder[GetItemIds] = DeriveJsonEncoder.gen[GetItemIds]
 

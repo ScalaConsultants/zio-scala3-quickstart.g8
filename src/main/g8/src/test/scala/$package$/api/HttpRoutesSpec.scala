@@ -31,16 +31,33 @@ object HttpRoutesSpec extends HttpRunnableSpec(8082):
   private val env = EventLoopGroup.auto() ++ ChannelFactory.auto ++ ServerChannelFactory.auto
 
   private val firstItem = "first description"
-  private val firstItemId = firstItem.hashCode.abs
+  private val firstItemId = 12345L
   private val updatedFirst = "new description"
   private val secondItem = "second description"
-  private val secondItemId = secondItem.hashCode.abs
+  private val secondItemId = 23456L
   private val thirdItem = "third description"
-  private val thirdItemId = thirdItem.hashCode.abs
+  private val thirdItemId = 5678L
 
-//  val mockRandomEnv: ULayer[Random] = MockRandom.NextLong(value(firstItemId))
-  //  private val repoLayer  = (Console.live ++ Random.live) >>> ItemRepo.live
-  //  private val businessLayer = repoLayer >>> BusinessLogic.live
+  private val originItems = GetItems(
+    List(
+      GetItem(firstItemId, firstItem),
+      GetItem(secondItemId, secondItem),
+      GetItem(thirdItemId, thirdItem),
+    )
+  )
+  private val updatedItems = GetItems(
+    List(GetItem(firstItemId, updatedFirst), GetItem(thirdItemId, thirdItem))
+  )
+  private val onlyThird = GetItems(List(GetItem(thirdItemId, thirdItem)))
+
+  val mockRandomEnv: ULayer[Random] =
+    MockRandom.NextLong(value(firstItemId)) ++ MockRandom.NextLong(
+      value(secondItemId)
+    ) ++ MockRandom.NextLong(
+      value(thirdItemId)
+    )
+  val repoLayer = (Console.live ++ mockRandomEnv) >>> ItemRepo.live
+  val businessLayer = repoLayer >>> BusinessLogic.live
 
   val app = serve(HttpRoutes.app)
 
@@ -48,59 +65,52 @@ object HttpRoutesSpec extends HttpRunnableSpec(8082):
     app
       .as(
         List(
-          testM("create item") {
+          //TODO move to integration tests ?
+          testM("end to end test") {
             val status1 = request(Root / "item", Method.POST, s"{\"description\": \"\$firstItem\"}")
               .map(_.status)
             val status2 = request(Root / "item", Method.POST, s"{\"description\": \"\$secondItem\"}")
               .map(_.status)
             val status3 = request(Root / "item", Method.POST, s"{\"description\": \"\$thirdItem\"}")
               .map(_.status)
-            for {
-              res1 <- assertM(status1)(equalTo(Status.CREATED))
-              res2 <- assertM(status2)(equalTo(Status.CREATED))
-              res3 <- assertM(status3)(equalTo(Status.CREATED))
-            } yield (res1 && res2 && res3)
+            val getAll = request(Root / "items", Method.GET, "")
+              .flatMap(res => getBodyAsString(res.content))
+            val updateStatus = request(
+              Root / "item" / "update",
+              Method.POST,
+              UpdateItem(firstItemId.toString, updatedFirst).toJson,
+            ).map(_.status)
+            val getSecondItem = request(Root / "item" / secondItemId.toString, Method.GET, "")
+              .flatMap(res => getBodyAsString(res.content))
+            val deleteSecondItem =
+              request(Root / "item" / secondItemId.toString, Method.DELETE, "").map(_.status)
+            val getOthers = request(Root / "items", Method.GET, "")
+              .flatMap(res => getBodyAsString(res.content))
+            val getLast = request(
+              Root / "items" / "by-ids",
+              Method.GET,
+              GetItemIds(Set(thirdItemId.toString)).toJson,
+            )
+              .flatMap(res => getBodyAsString(res.content))
+            for
+              create1 <- assertM(status1)(equalTo(Status.CREATED))
+              create2 <- assertM(status2)(equalTo(Status.CREATED))
+              create3 <- assertM(status3)(equalTo(Status.CREATED))
+              getAll1 <- assertM(getAll)(equalTo(originItems.toJson))
+              updateFirst <- assertM(updateStatus)(equalTo(Status.OK))
+              getSecond <- assertM(getSecondItem)(equalTo(GetItem(secondItemId, secondItem).toJson))
+              deleteSecond <- assertM(deleteSecondItem)(equalTo(Status.OK))
+              getRest <- assertM(getOthers)(equalTo(updatedItems.toJson))
+              getThird <- assertM(getLast)(equalTo(onlyThird.toJson))
+            yield (create1 && create2 && create3 && getAll1 && updateFirst &&
+            getSecond && deleteSecond && getRest && getThird)
           }
         )
       )
       .useNow
-  )).provideCustomLayerShared(env ++ testLayer)
+  )).provideCustomLayerShared(businessLayer ++ env)
 
   def getBodyAsString(body: HttpData[Any, Nothing]): IO[Throwable, String] = body match {
     case HttpData.CompleteData(data) => ZIO.succeed(data.map(_.toChar).mkString)
     case _                           => ZIO.fail(new RuntimeException("unexpected content"))
   }
-
-  private val testLayer: ZLayer[Any, Nothing, BusinessLogic] =
-    ZLayer.succeed(new BusinessLogic.Service {
-      private val items: Map[String, String] = Map.empty
-
-      def addItem(description: String): IO[DomainError, ItemId] = IO.succeed(items + (description.hashCode.abs.toString -> description)) *> ZIO.succeed(ItemId(description.hashCode.abs))
-
-      def deleteItem(id: String): IO[DomainError, Unit] = ZIO.succeed(items.removed(id))
-
-      def getAllItems(): IO[DomainError, List[Item]] = ZIO.succeed(
-        items
-          .view
-          .map {
-            case (key, value) => Item(ItemId(key.toLong), value)
-          }
-          .toList
-      )
-
-      def getItemById(id: String): IO[DomainError, Option[Item]] =
-        ZIO.succeed(items.get(id).map(desc => Item(ItemId(id.toLong), desc)))
-
-      def getItemsByIds(ids: Set[String]): IO[DomainError, List[Item]] =
-        ZIO.succeed(
-          ids.flatMap(id => items.get(id).map(value => Item(ItemId(id.toLong), value))).toList
-        )
-
-      def updateItem(id: String, description: String): IO[DomainError, Unit] =
-        items.get(id) match {
-          case Some(value) =>
-            items + (id -> description)
-            ZIO.unit
-          case None => ZIO.fail(DomainError.BusinessError(s"no such key \$id"))
-        }
-    })

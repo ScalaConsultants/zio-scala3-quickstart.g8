@@ -31,7 +31,7 @@ object HttpRoutes:
       deleteItem(id).map(_ => Response.ok)
 
     case req @ Method.POST -> Root / "item" =>
-      (for {
+      (for
         body <- ZIO
           .fromEither(req.getBodyAsString match {
             case Some(value) => value.fromJson[CreateItem]
@@ -39,7 +39,7 @@ object HttpRoutes:
           })
           .mapError(msg => new IllegalArgumentException(msg))
         id <- addItem(body.description)
-      } yield GetItem(id.value, body.description)).map(created =>
+       yield GetItem(id.value, body.description)).map(created =>
         Response.http(
           Status.CREATED,
           List(Header.contentTypeJson),
@@ -48,7 +48,7 @@ object HttpRoutes:
       )
 
     case req @ Method.POST -> Root / "item" / "update" =>
-      for {
+      for
         update <- ZIO
           .fromEither(req.getBodyAsString match {
             case Some(value) => value.fromJson[UpdateItem]
@@ -56,10 +56,10 @@ object HttpRoutes:
           })
           .mapError(msg => new IllegalArgumentException(msg))
         _ <- updateItem(update.id, update.description)
-      } yield (Response.ok)
+      yield (Response.ok)
 
     case req @ Method.GET -> Root / "items" / "by-ids" =>
-      (for {
+      (for
         itemIds <- ZIO
           .fromEither(req.getBodyAsString match {
             case Some(value) => value.fromJson[GetItemIds]
@@ -67,7 +67,7 @@ object HttpRoutes:
           })
           .mapError(msg => new IllegalArgumentException(msg))
         items <- getItemsByIds(itemIds.ids)
-      } yield items).map(items =>
-        Response.jsonString(items.map(i => GetItem(i.id.value, i.description)).toJson)
+       yield items).map(items =>
+        Response.jsonString(GetItems(items.map(i => GetItem(i.id.value, i.description))).toJson)
       )
   }
