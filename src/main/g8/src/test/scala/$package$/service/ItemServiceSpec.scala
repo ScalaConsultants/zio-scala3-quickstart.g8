@@ -11,6 +11,7 @@ import $package$.repo._
 
 object ItemServiceSpec extends DefaultRunnableSpec:
 
+  val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
   val exampleItem = Item(ItemId(123), "foo")
 
   val getItemMock: ULayer[Has[ItemRepository]] = ItemRepoMock.GetById(
@@ -35,15 +36,15 @@ object ItemServiceSpec extends DefaultRunnableSpec:
           fails(equalTo(DomainError.BusinessError("Id abc is in incorrect form.")))
         )
       yield found && mising && unparseable
-    }.provideCustomLayer(getItemMock >>> ItemServiceLive.layer),
+    }.provideCustomLayer((getItemMock ++ subscriberLayer) >>> ItemServiceLive.layer),
     suite("update item")(
       testM("non existing item") {
         assertM(updateItem("124", "bar").run)(
           fails(equalTo(DomainError.BusinessError("Item with ID 124 not found")))
         )
-      }.provideCustomLayer(getByNonExistingId >>> ItemServiceLive.layer),
+      }.provideCustomLayer((getByNonExistingId ++ subscriberLayer) >>> ItemServiceLive.layer),
       testM("update succesfull") {
         assertM(updateItem("123", "bar"))(isUnit)
-      }.provideCustomLayer(updateSuccesfullMock >>> ItemServiceLive.layer),
+      }.provideCustomLayer((updateSuccesfullMock ++ subscriberLayer)>>> ItemServiceLive.layer),
     ),
   )
