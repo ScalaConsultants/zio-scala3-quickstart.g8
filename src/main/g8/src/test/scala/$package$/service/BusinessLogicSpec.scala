@@ -11,6 +11,7 @@ import $package$.repo._
 
 object BusinessLogicSpec extends DefaultRunnableSpec:
 
+  val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
   val exampleItem = Item(ItemId(123), "foo")
 
   val getItemMock: ULayer[Has[ItemRepository]] = ItemRepoMock.GetById(
@@ -35,15 +36,15 @@ object BusinessLogicSpec extends DefaultRunnableSpec:
           fails(equalTo(DomainError.BusinessError("Id abc is in incorrect form.")))
         )
       yield found && mising && unparseable
-    }.provideCustomLayer(getItemMock >>> BusinessLogicServiceLive.layer),
+    }.provideCustomLayer((getItemMock ++ subscriberLayer) >>> BusinessLogicServiceLive.layer),
     suite("update item")(
       testM("non existing item") {
         assertM(updateItem("124", "bar").run)(
           fails(equalTo(DomainError.BusinessError("Item with ID 124 not found")))
         )
-      }.provideCustomLayer(getByNonExistingId >>> BusinessLogicServiceLive.layer),
+      }.provideCustomLayer((getByNonExistingId ++ subscriberLayer) >>> BusinessLogicServiceLive.layer),
       testM("update succesfull") {
         assertM(updateItem("123", "bar"))(isUnit)
-      }.provideCustomLayer(updateSuccesfullMock >>> BusinessLogicServiceLive.layer),
+      }.provideCustomLayer((updateSuccesfullMock ++ subscriberLayer)>>> BusinessLogicServiceLive.layer),
     ),
   )
