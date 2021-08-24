@@ -1,26 +1,27 @@
 package $package$.service
 
-import $package$.service.itemservice.BusinessLogic
+import zio._
 import zio.test._
 import zio.test.Assertion._
-import $package$.domain._
-import $package$.repo.ItemRepoMock
-import $package$.repo.itemrepository._
 import zio.test.mock.Expectation._
-import zio._
+import $package$.domain._
+import $package$.service._
+import $package$.service.BusinessLogicService._
+import $package$.repo._
 
 object BusinessLogicSpec extends DefaultRunnableSpec:
 
   val exampleItem = Item(ItemId(123), "foo")
 
-  val getItemMock: ULayer[ItemRepo] = ItemRepoMock.GetById(
+  val getItemMock: ULayer[Has[ItemRepository]] = ItemRepoMock.GetById(
     equalTo(ItemId(123)),
     value(Some(exampleItem)),
   ) ++ ItemRepoMock.GetById(equalTo(ItemId(124)), value(None))
 
-  val getByNonExistingId: ULayer[ItemRepo] = ItemRepoMock.GetById(equalTo(ItemId(124)), value(None))
+  val getByNonExistingId: ULayer[Has[ItemRepository]] =
+    ItemRepoMock.GetById(equalTo(ItemId(124)), value(None))
 
-  val updateSuccesfullMock: ULayer[ItemRepo] = ItemRepoMock.GetById(
+  val updateSuccesfullMock: ULayer[Has[ItemRepository]] = ItemRepoMock.GetById(
     equalTo(ItemId(123)),
     value(Some(exampleItem)),
   ) ++ ItemRepoMock.Update(equalTo((ItemId(123), exampleItem.copy(description = "bar"))))
@@ -28,21 +29,21 @@ object BusinessLogicSpec extends DefaultRunnableSpec:
   def spec = suite("business logic test")(
     testM("get item id accept long") {
       for
-        found <- assertM(BusinessLogic.getItemById("123"))(isSome(equalTo(exampleItem)))
-        mising <- assertM(BusinessLogic.getItemById("124"))(isNone)
-        unparseable <- assertM(BusinessLogic.getItemById("abc").run)(
+        found <- assertM(getItemById("123"))(isSome(equalTo(exampleItem)))
+        mising <- assertM(getItemById("124"))(isNone)
+        unparseable <- assertM(getItemById("abc").run)(
           fails(equalTo(DomainError.BusinessError("Id abc is in incorrect form.")))
         )
       yield found && mising && unparseable
-    }.provideCustomLayer(getItemMock >>> BusinessLogic.live),
+    }.provideCustomLayer(getItemMock >>> BusinessLogicServiceLive.layer),
     suite("update item")(
       testM("non existing item") {
-        assertM(BusinessLogic.updateItem("124", "bar").run)(
+        assertM(updateItem("124", "bar").run)(
           fails(equalTo(DomainError.BusinessError("Item with ID 124 not found")))
         )
-      }.provideCustomLayer(getByNonExistingId >>> BusinessLogic.live),
+      }.provideCustomLayer(getByNonExistingId >>> BusinessLogicServiceLive.layer),
       testM("update succesfull") {
-        assertM(BusinessLogic.updateItem("123", "bar"))(isUnit)
-      }.provideCustomLayer(updateSuccesfullMock >>> BusinessLogic.live),
+        assertM(updateItem("123", "bar"))(isUnit)
+      }.provideCustomLayer(updateSuccesfullMock >>> BusinessLogicServiceLive.layer),
     ),
   )

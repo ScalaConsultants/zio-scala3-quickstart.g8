@@ -4,13 +4,13 @@ import zhttp.http._
 import zhttp.service._
 import zio._
 import zio.json._
-import $package$.service.itemservice.BusinessLogic
-import $package$.service.itemservice.BusinessLogic._
 import $package$.api.protocol._
+import $package$.service.BusinessLogicService
+import $package$.service.BusinessLogicService._
 
 object HttpRoutes:
 
-  val app: HttpApp[BusinessLogic, Throwable] = HttpApp.collectM {
+  val app: HttpApp[Has[BusinessLogicService], Throwable] = HttpApp.collectM {
     case Method.GET -> Root / "items" =>
       getAllItems().map(items =>
         Response.jsonString(
@@ -67,7 +67,7 @@ object HttpRoutes:
           })
           .mapError(msg => new IllegalArgumentException(msg))
         items <- getItemsByIds(itemIds.ids)
-       yield items).map(items =>
+      yield items).map(items =>
         Response.jsonString(GetItems(items.map(i => GetItem(i.id.value, i.description))).toJson)
       )
   }

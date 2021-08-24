@@ -1,29 +1,26 @@
 package $package$.api
 
 import zio.test._
-import zio.test.Assertion
-import zio.test.Assertion._
 import zhttp.test._
 import zhttp.http._
-import $package$.util._
-import zio.test.assertM
 import zhttp.service._
 import zhttp.service.server.ServerChannelFactory
 import zio._
-import $package$.Main
-import zio.test.TestAspect._
 import zio.random._
+import zio.test.TestAspect._
 import zio.console._
 import zio.json._
-import $package$.repo.itemrepository._
-import $package$.service.itemservice._
 import zio.test.mock._
 import zhttp.test.HttpWithTest
 import zio.test.Assertion._
 import zio.test.mock.Expectation._
 import zio.test.mock.MockRandom
-import $package$.api.protocol._
 import zhttp.http.HttpData.StreamData
+import $package$.Main
+import $package$.repo._
+import $package$.service._
+import $package$.api.protocol._
+import $package$.util._
 import $package$.domain._
 
 object HttpRoutesSpec extends HttpRunnableSpec(8082):
@@ -56,8 +53,8 @@ object HttpRoutesSpec extends HttpRunnableSpec(8082):
     ) ++ MockRandom.NextLong(
       value(thirdItemId)
     )
-  val repoLayer = (Console.live ++ mockRandomEnv) >>> ItemRepo.live
-  val businessLayer = repoLayer >>> BusinessLogic.live
+  val repoLayer = (Console.live ++ mockRandomEnv) >>> ItemRepositoryLive.layer
+  val businessLayer = repoLayer >>> BusinessLogicServiceLive.layer
 
   val app = serve(HttpRoutes.app)
 
