@@ -9,7 +9,9 @@ trait BusinessLogicService:
 
   def deleteItem(id: String): IO[DomainError, Unit]
 
+  $if(add_websocket_endpoint.truthy)$
   def deletedEvents(): Stream[Nothing, ItemId]
+  $endif$
 
   def getAllItems(): IO[DomainError, List[Item]]
 
@@ -26,8 +28,10 @@ object BusinessLogicService:
   def deleteItem(id: String): ZIO[Has[BusinessLogicService], DomainError, Unit] =
     ZIO.serviceWith[BusinessLogicService](_.deleteItem(id))
 
+  $if(add_websocket_endpoint.truthy)$
   def deletedEvents(): ZStream[Has[BusinessLogicService], Nothing, ItemId] =
     ZStream.accessStream(_.get.deletedEvents())
+  $endif$
 
   def getAllItems(): ZIO[Has[BusinessLogicService], DomainError, List[Item]] =
     ZIO.serviceWith[BusinessLogicService](_.getAllItems())

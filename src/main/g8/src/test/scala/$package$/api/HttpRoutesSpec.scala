@@ -54,8 +54,10 @@ object HttpRoutesSpec extends HttpRunnableSpec(8082):
       value(thirdItemId)
     )
   val repoLayer = (Console.live ++ mockRandomEnv) >>> ItemRepositoryLive.layer
-  val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
-  val businessLayer = (repoLayer ++ subscriberLayer) >>> BusinessLogicServiceLive.layer
+  $if(add_websocket_endpoint.truthy)$
+  private val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
+  $endif$
+  val businessLayer = repoLayer $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> BusinessLogicServiceLive.layer
 
   val app = serve(HttpRoutes.app)
 

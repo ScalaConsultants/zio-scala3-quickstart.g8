@@ -16,8 +16,10 @@ object Main extends zio.App:
   //TODO move to config with zio-config
   private val port = 8080
   private val repoLayer = (Random.live ++ Console.live) >>> ItemRepositoryLive.layer
+  $if(add_websocket_endpoint.truthy)$
   private val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
-  val businessLayer = (repoLayer ++ subscriberLayer) >>> BusinessLogicServiceLive.layer
+  $endif$
+  val businessLayer = repoLayer $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> BusinessLogicServiceLive.layer
   val applicationLayer = businessLayer ++ ServerChannelFactory.auto
 
   def run(args: List[String]): URIO[ZEnv, ExitCode] =
@@ -31,4 +33,4 @@ object Main extends zio.App:
 
   val server: Server[Console with Has[BusinessLogicService], Throwable] =
     Server.port(port) ++
-      Server.app(HealthCheck.healthCheck +++ HttpRoutes.app +++ WebSocketRoute.socketImpl)
+      Server.app(HealthCheck.healthCheck +++ HttpRoutes.app $if(add_websocket_endpoint.truthy)$ +++ WebSocketRoute.socketImpl $endif$)

@@ -6,7 +6,7 @@ import $package$.domain._
 import $package$.domain.DomainError.BusinessError
 import $package$.repo._
 
-final case class BusinessLogicServiceLive(repo: ItemRepository, subscriber: SubscriberService) extends BusinessLogicService:
+final case class BusinessLogicServiceLive(repo: ItemRepository $if(add_websocket_endpoint.truthy)$, subscriber: SubscriberService $endif$) extends BusinessLogicService:
   def addItem(description: String): IO[DomainError, ItemId] =
     repo.add(description)
 
@@ -14,11 +14,13 @@ final case class BusinessLogicServiceLive(repo: ItemRepository, subscriber: Subs
     for
       itemId <- formatId(id).map(ItemId(_))
       _ <- repo.delete(itemId)
-      _ <- subscriber.publishDeleteEvents(itemId)
+      $if(add_websocket_endpoint.truthy)$ _ <- subscriber.publishDeleteEvents(itemId) $endif$
     yield ()
 
+  $if(add_websocket_endpoint.truthy)$
   def deletedEvents(): Stream[Nothing, ItemId] =
     subscriber.showDeleteEvents
+  $endif$
 
   def getAllItems(): IO[DomainError, List[Item]] =
     repo.getAll()
@@ -48,5 +50,5 @@ final case class BusinessLogicServiceLive(repo: ItemRepository, subscriber: Subs
     ZIO.fromOption(id.toLongOption).mapError(_ => BusinessError(s"Id \$id is in incorrect form."))
 
 object BusinessLogicServiceLive:
-  val layer: URLayer[Has[ItemRepository] with Has[SubscriberService], Has[BusinessLogicService]] =
-    (BusinessLogicServiceLive(_, _)).toLayer
+  val layer: URLayer[Has[ItemRepository] $if(add_websocket_endpoint.truthy)$ with Has[SubscriberService] $endif$, Has[BusinessLogicService]] =
+    (BusinessLogicServiceLive(_$if(add_websocket_endpoint.truthy)$, _ $endif$)).toLayer
