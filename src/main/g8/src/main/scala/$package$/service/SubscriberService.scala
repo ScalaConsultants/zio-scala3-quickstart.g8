@@ -7,6 +7,7 @@ import zio.stream.*
 trait SubscriberService:
   def publishDeleteEvents(deletedItemId: ItemId): IO[Nothing, List[Boolean]]
   def showDeleteEvents: Stream[Nothing, ItemId]
+  def getQueue: UIO[List[Queue[ItemId]]]
   
 object SubscriberService {
   def publishDeleteEvents(deletedItemId: ItemId): ZIO[Has[SubscriberService], Nothing, List[Boolean]] =
@@ -14,4 +15,7 @@ object SubscriberService {
 
   def showDeleteEvents: ZStream[Has[SubscriberService], Nothing, ItemId] =
     ZStream.accessStream(_.get.showDeleteEvents)
+
+  def getQueue: ZIO[Has[SubscriberService], Nothing, List[Queue[ItemId]]] =
+    ZIO.serviceWith[SubscriberService](_.getQueue)
 }

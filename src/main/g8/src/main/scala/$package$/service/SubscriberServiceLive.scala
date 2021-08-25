@@ -6,6 +6,7 @@ import zio.stream.*
 
 final case class SubscriberServiceLive(deletedEventsSubscribers: Ref[List[Queue[ItemId]]])
     extends SubscriberService {
+  override def getQueue: UIO[List[Queue[ItemId]]] = deletedEventsSubscribers.get
   override def publishDeleteEvents(deletedItemId: ItemId): IO[Nothing, List[Boolean]] =
     deletedEventsSubscribers.get.flatMap { subs =>
       UIO.foreach(subs) { queue =>
