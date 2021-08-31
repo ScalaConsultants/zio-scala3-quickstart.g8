@@ -29,8 +29,8 @@ object WebSocketRoute:
   private val socketApp =
     SocketApp.open(open)
       ++ SocketApp.message(socket)
-      ++ SocketApp.close(_ => console.putStrLn("Closed!").ignore)
-      ++ SocketApp.error(_ => console.putStrLn("Error!").ignore)
+      ++ SocketApp.close(_ => putStrLn("Closed!").ignore)
+      ++ SocketApp.error(_ => putStrLn("Error!").ignore)
       ++ SocketApp.decoder(decoder)
 
   val socketImpl: HttpApp[Has[BusinessLogicService] with Console, Throwable] = HttpApp.collectM {

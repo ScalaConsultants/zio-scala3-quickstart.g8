@@ -1,4 +1,4 @@
-package com.example.service
+package $package$.service
 
 import $package$.domain.ItemId
 import $package$.service.*
@@ -11,7 +11,7 @@ import zio.console.*
 import zio.duration.*
 import zio.test.environment.TestClock
 
-object SubscriberSpec extends DefaultRunnableSpec {
+object SubscriberSpec extends DefaultRunnableSpec:
   val deletedEventsSubscribersMock: UIO[Ref[List[Queue[ItemId]]]] =
     for {
       queue <- Queue.unbounded[ItemId]
@@ -49,4 +49,3 @@ object SubscriberSpec extends DefaultRunnableSpec {
       }.provideCustomLayer(subscriberLayerShow)
     ),
   )
-}

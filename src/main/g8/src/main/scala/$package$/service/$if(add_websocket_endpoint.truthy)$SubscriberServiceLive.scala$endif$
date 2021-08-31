@@ -1,11 +1,11 @@
-package com.example.service
+package $package$.service
 
 import $package$.domain.ItemId
 import zio.*
 import zio.stream.*
 
 final case class SubscriberServiceLive(deletedEventsSubscribers: Ref[List[Queue[ItemId]]])
-    extends SubscriberService {
+    extends SubscriberService:
   override def getQueue: UIO[List[Queue[ItemId]]] = deletedEventsSubscribers.get
   override def publishDeleteEvents(deletedItemId: ItemId): IO[Nothing, List[Boolean]] =
     deletedEventsSubscribers.get.flatMap { subs =>
@@ -23,9 +23,7 @@ final case class SubscriberServiceLive(deletedEventsSubscribers: Ref[List[Queue[
       _ <- deletedEventsSubscribers.update(queue :: _)
     } yield ZStream.fromQueue(queue)
   }
-}
 
-object SubscriberServiceLive {
+object SubscriberServiceLive:
   val layer: URLayer[Has[Ref[List[Queue[ItemId]]]], Has[SubscriberService]] =
     (SubscriberServiceLive(_)).toLayer
-}
