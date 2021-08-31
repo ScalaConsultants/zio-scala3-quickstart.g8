@@ -1,11 +1,11 @@
 package $package$.api
 
-import zio.*
-import zhttp.http.*
-import zhttp.socket.*
-import zio.stream.*
-import zio.console.*
-import $package$.service.BusinessLogicService.*
+import zio._
+import zhttp.http._
+import zhttp.socket._
+import zio.stream._
+import zio.console._
+import $package$.service.BusinessLogicService._
 import $package$.service.BusinessLogicService
 
 object WebSocketRoute:
@@ -26,11 +26,12 @@ object WebSocketRoute:
           )
         }
   }
+
   private val socketApp =
     SocketApp.open(open)
       ++ SocketApp.message(socket)
-      ++ SocketApp.close(_ => console.putStrLn("Closed!").ignore)
-      ++ SocketApp.error(_ => console.putStrLn("Error!").ignore)
+      ++ SocketApp.close(_ => putStrLn("Closed!").ignore)
+      ++ SocketApp.error(_ => putStrLn("Error!").ignore)
       ++ SocketApp.decoder(decoder)
 
   val socketImpl: HttpApp[Has[BusinessLogicService] with Console, Throwable] = HttpApp.collectM {

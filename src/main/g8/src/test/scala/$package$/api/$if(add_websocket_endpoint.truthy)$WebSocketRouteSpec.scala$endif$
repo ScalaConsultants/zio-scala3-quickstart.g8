@@ -1,4 +1,4 @@
-package com.example.api
+package $package$.api
 
 import zio.test._
 import zhttp.test._
@@ -19,7 +19,7 @@ import $package$.api.protocol._
 import $package$.util._
 import $package$.domain._
 
-object WebSocketRouteSpec extends DefaultRunnableSpec {
+object WebSocketRouteSpec extends DefaultRunnableSpec:
   private val env = EventLoopGroup.auto() ++ ChannelFactory.auto ++ ServerChannelFactory.auto
   val repoLayer = (Console.live ++ Random.live) >>> ItemRepositoryLive.layer
   val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
@@ -39,4 +39,3 @@ object WebSocketRouteSpec extends DefaultRunnableSpec {
         result <- assertM(ZIO.succeed(checkResponse))(equalTo(true))
       } yield result
     }.provideCustomLayer(businessLayer ++ env))
-}

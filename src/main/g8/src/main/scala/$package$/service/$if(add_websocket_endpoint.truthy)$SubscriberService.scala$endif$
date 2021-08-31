@@ -1,15 +1,15 @@
-package com.example.service
+package $package$.service
 
 import $package$.domain.ItemId
-import zio.*
-import zio.stream.*
+import zio._
+import zio.stream._
 
 trait SubscriberService:
   def publishDeleteEvents(deletedItemId: ItemId): IO[Nothing, List[Boolean]]
   def showDeleteEvents: Stream[Nothing, ItemId]
   def getQueue: UIO[List[Queue[ItemId]]]
   
-object SubscriberService {
+object SubscriberService:
   def publishDeleteEvents(deletedItemId: ItemId): ZIO[Has[SubscriberService], Nothing, List[Boolean]] =
     ZIO.serviceWith[SubscriberService](_.publishDeleteEvents(deletedItemId))
 
@@ -18,4 +18,3 @@ object SubscriberService {
 
   def getQueue: ZIO[Has[SubscriberService], Nothing, List[Queue[ItemId]]] =
     ZIO.serviceWith[SubscriberService](_.getQueue)
-}
