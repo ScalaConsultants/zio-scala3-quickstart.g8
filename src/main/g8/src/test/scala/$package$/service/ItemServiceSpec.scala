@@ -6,10 +6,10 @@ import zio.test.Assertion._
 import zio.test.mock.Expectation._
 import $package$.domain._
 import $package$.service._
-import $package$.service.BusinessLogicService._
+import $package$.service.ItemService._
 import $package$.repo._
 
-object BusinessLogicSpec extends DefaultRunnableSpec:
+object ItemServiceSpec extends DefaultRunnableSpec:
 
   val exampleItem = Item(ItemId(123), "foo")
 
@@ -26,7 +26,7 @@ object BusinessLogicSpec extends DefaultRunnableSpec:
     value(Some(exampleItem)),
   ) ++ ItemRepoMock.Update(equalTo((ItemId(123), exampleItem.copy(description = "bar"))))
 
-  def spec = suite("business logic test")(
+  def spec = suite("item service test")(
     testM("get item id accept long") {
       for
         found <- assertM(getItemById("123"))(isSome(equalTo(exampleItem)))
@@ -35,15 +35,15 @@ object BusinessLogicSpec extends DefaultRunnableSpec:
           fails(equalTo(DomainError.BusinessError("Id abc is in incorrect form.")))
         )
       yield found && mising && unparseable
-    }.provideCustomLayer(getItemMock >>> BusinessLogicServiceLive.layer),
+    }.provideCustomLayer(getItemMock >>> ItemServiceLive.layer),
     suite("update item")(
       testM("non existing item") {
         assertM(updateItem("124", "bar").run)(
           fails(equalTo(DomainError.BusinessError("Item with ID 124 not found")))
         )
-      }.provideCustomLayer(getByNonExistingId >>> BusinessLogicServiceLive.layer),
+      }.provideCustomLayer(getByNonExistingId >>> ItemServiceLive.layer),
       testM("update succesfull") {
         assertM(updateItem("123", "bar"))(isUnit)
-      }.provideCustomLayer(updateSuccesfullMock >>> BusinessLogicServiceLive.layer),
+      }.provideCustomLayer(updateSuccesfullMock >>> ItemServiceLive.layer),
     ),
   )

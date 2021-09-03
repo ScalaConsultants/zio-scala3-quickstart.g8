@@ -4,13 +4,14 @@ import zhttp.http._
 import zhttp.service._
 import zio._
 import zio.json._
+import zhttp.http.ResponseHelpers
 import $package$.api.protocol._
-import $package$.service.BusinessLogicService
-import $package$.service.BusinessLogicService._
+import $package$.service.ItemService
+import $package$.service.ItemService._
 
 object HttpRoutes:
 
-  val app: HttpApp[Has[BusinessLogicService], Throwable] = HttpApp.collectM {
+  val app: HttpApp[Has[ItemService], Throwable] = HttpApp.collectM {
     case Method.GET -> Root / "items" =>
       getAllItems().map(items =>
         Response.jsonString(
@@ -18,56 +19,57 @@ object HttpRoutes:
         )
       )
 
-    case Method.GET -> Root / "item" / id =>
+    case Method.GET -> Root / "items" / id =>
       getItemById(id)
         .some
-        .mapError {
-          case Some(exception) => exception
-          case None            => new java.lang.RuntimeException(s"Item with \$id does not exists")
+        .tapError {
+          case Some(exception) => ZIO.unit
+          case None            => ZIO.unit //TODO log error Item with id does not exist
         }
-        .map(item => Response.jsonString(GetItem(item.id.value, item.description).toJson))
+        .either
+        .map {
+          case Right(item) => Response.jsonString(GetItem(item.id.value, item.description).toJson)
+          case Left(_)     => Response.status(Status.NOT_FOUND)
+        }
 
-    case Method.DELETE -> Root / "item" / id =>
-      deleteItem(id).map(_ => Response.ok)
+    case Method.DELETE -> Root / "items" / id =>
+      deleteItem(id)
+        .tapError(e => ZIO.unit //TODO log
+        )
+        .either
+        .map {
+          case Right(_) => Response.ok
+          case Left(_)  => Response.status(Status.NOT_FOUND)
+        }
 
-    case req @ Method.POST -> Root / "item" =>
+    case req @ Method.POST -> Root / "items" =>
       (for
         body <- ZIO
-          .fromEither(req.getBodyAsString match {
-            case Some(value) => value.fromJson[CreateItem]
-            case None        => Left("Unparseable body")
-          })
-          .mapError(msg => new IllegalArgumentException(msg))
+          .fromOption(req.getBodyAsString)
+          .map(_.fromJson[CreateItem])
+          .absolve
+          .tapError(_ => ZIO.unit) //TODO log Unparseable body
         id <- addItem(body.description)
-       yield GetItem(id.value, body.description)).map(created =>
-        Response.http(
-          Status.CREATED,
-          List(Header.contentTypeJson),
-          HttpData.CompleteData(Chunk.fromArray(created.toJson.getBytes(HTTP_CHARSET))),
-        )
-      )
+      yield GetItem(id.value, body.description)).either.map {
+        case Right(created) =>
+          Response.http(
+            Status.CREATED,
+            List(Header.contentTypeJson),
+            HttpData.CompleteData(Chunk.fromArray(created.toJson.getBytes(HTTP_CHARSET))),
+          )
+        case Left(_) => Response.status(Status.BAD_REQUEST)
+      }
 
-    case req @ Method.POST -> Root / "item" / "update" =>
-      for
-        update <- ZIO
-          .fromEither(req.getBodyAsString match {
-            case Some(value) => value.fromJson[UpdateItem]
-            case None        => Left("Unparseable body")
-          })
-          .mapError(msg => new IllegalArgumentException(msg))
-        _ <- updateItem(update.id, update.description)
-      yield (Response.ok)
-
-    case req @ Method.GET -> Root / "items" / "by-ids" =>
+    case req @ Method.PUT -> Root / "items" / id =>
       (for
-        itemIds <- ZIO
-          .fromEither(req.getBodyAsString match {
-            case Some(value) => value.fromJson[GetItemIds]
-            case None        => Left("Unparseable body")
-          })
-          .mapError(msg => new IllegalArgumentException(msg))
-        items <- getItemsByIds(itemIds.ids)
-      yield items).map(items =>
-        Response.jsonString(GetItems(items.map(i => GetItem(i.id.value, i.description))).toJson)
-      )
+        update <- ZIO
+          .fromOption(req.getBodyAsString)
+          .map(_.fromJson[UpdateItem])
+          .absolve
+          .tapError(_ => ZIO.unit) //TODO log Unparseable body
+        _ <- updateItem(id, update.description)
+      yield ()).either.map {
+        case Left(_)  => Response.status(Status.BAD_REQUEST)
+        case Right(_) => Response.ok
+      }
   }

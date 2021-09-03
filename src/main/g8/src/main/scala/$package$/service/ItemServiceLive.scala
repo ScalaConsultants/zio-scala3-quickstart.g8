@@ -5,7 +5,7 @@ import $package$.domain._
 import $package$.domain.DomainError.BusinessError
 import $package$.repo._
 
-final case class BusinessLogicServiceLive(repo: ItemRepository) extends BusinessLogicService:
+final case class ItemServiceLive(repo: ItemRepository) extends ItemService:
   def addItem(description: String): IO[DomainError, ItemId] =
     repo.add(description)
 
@@ -42,6 +42,6 @@ final case class BusinessLogicServiceLive(repo: ItemRepository) extends Business
   private def formatId(id: String): IO[DomainError, Long] =
     ZIO.fromOption(id.toLongOption).mapError(_ => BusinessError(s"Id \$id is in incorrect form."))
 
-object BusinessLogicServiceLive:
-  val layer: URLayer[Has[ItemRepository], Has[BusinessLogicService]] =
-    (BusinessLogicServiceLive(_)).toLayer
+object ItemServiceLive:
+  val layer: URLayer[Has[ItemRepository], Has[ItemService]] =
+    (ItemServiceLive(_)).toLayer

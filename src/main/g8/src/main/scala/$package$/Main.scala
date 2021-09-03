@@ -16,7 +16,7 @@ object Main extends zio.App:
   //TODO move to config with zio-config
   private val port = 8080
   private val repoLayer = (Random.live ++ Console.live) >>> ItemRepositoryLive.layer
-  val businessLayer = repoLayer >>> BusinessLogicServiceLive.layer
+  val businessLayer = repoLayer >>> ItemServiceLive.layer
   val applicationLayer = businessLayer ++ ServerChannelFactory.auto
 
   def run(args: List[String]): URIO[ZEnv, ExitCode] =
@@ -28,6 +28,6 @@ object Main extends zio.App:
       .provideCustomLayer(applicationLayer ++ EventLoopGroup.auto(nThreads))
       .exitCode
 
-  val server: Server[Has[BusinessLogicService], Throwable] =
+  val server: Server[Has[ItemService], Throwable] =
     Server.port(port) ++
       Server.app(HealthCheck.healthCheck +++ HttpRoutes.app)
