@@ -21,7 +21,7 @@ lazy val root = (project in file("."))
     ),
     // TODO remove, temporary solution to find zhttp-test
     // https://github.com/dream11/zio-http/issues/321
-    resolvers ++= Seq("Sonatype OSS Snapshots s01" at "https://s01.oss.sonatype.org/content/repositories/snapshots", Resolver.typesafeIvyRepo("releases")),
+    resolvers += "Sonatype OSS Snapshots s01" at "https://s01.oss.sonatype.org/content/repositories/snapshots",
     name := "zio-quickstart",
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio" % zioVersion,
