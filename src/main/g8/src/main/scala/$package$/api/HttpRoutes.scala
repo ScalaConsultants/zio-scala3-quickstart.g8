@@ -4,31 +4,33 @@ import zhttp.http._
 import zhttp.service._
 import zio._
 import zio.json._
+import zio.zmx.metrics._
 import $package$.api.protocol._
 import $package$.service.BusinessLogicService
 import $package$.service.BusinessLogicService._
 
 object HttpRoutes:
 
+  //TODO add more metrics
   val app: HttpApp[Has[BusinessLogicService], Throwable] = HttpApp.collectM {
     case Method.GET -> Root / "items" =>
       getAllItems().map(items =>
         Response.jsonString(
           GetItems(items.map(item => GetItem(item.id.value, item.description))).toJson
         )
-      )
+      ) @@ MetricAspect.count("get_items_counts")
 
     case Method.GET -> Root / "item" / id =>
-      getItemById(id)
+      (getItemById(id)
         .some
         .mapError {
           case Some(exception) => exception
           case None            => new java.lang.RuntimeException(s"Item with \$id does not exists")
-        }
+        } @@ MetricAspect.count("get_item", "item_id" -> id))
         .map(item => Response.jsonString(GetItem(item.id.value, item.description).toJson))
 
     case Method.DELETE -> Root / "item" / id =>
-      deleteItem(id).map(_ => Response.ok)
+      deleteItem(id).map(_ => Response.ok) @@ MetricAspect.count("delete_item", "item_id" -> id)
 
     case req @ Method.POST -> Root / "item" =>
       (for
