@@ -17,16 +17,20 @@ import $package$.service._
 import $package$.repo._
 import $package$.api._
 import $package$.api.metricsdiagnostics._
+import $package$.config.configuration._
 
 object Main extends zio.App:
 
+  private val clockConsole = Clock.live ++ Console.live
   private val repoLayer = (Random.live ++ Console.live) >>> ItemRepositoryLive.layer
   $if(add_websocket_endpoint.truthy)$
   private val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
   $endif$
-  val businessLayer = repoLayer $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> BusinessLogicServiceLive.layer
-  private val diagnosticsLayer = (Clock.live ++ Console.live ++ ServerConfig.layer) >>> MetricsAndDiagnostics.layer
-  private val applicatonLayer = businessLayer ++ ServerChannelFactory.auto ++ PrometheusClient.live ++ diagnosticsLayer
+  private val businessLayer = repoLayer  $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$  >>> ItemServiceLive.layer
+  private val zmxClient = (clockConsole ++ DiagnosticsServerConfig.layer) >>> MetricsAndDiagnostics.zmxClientLayer
+
+  private val diagnosticsLayer = (clockConsole ++ DiagnosticsServerConfig.layer) >>> MetricsAndDiagnostics.diagnosticsLayer
+  private val applicatonLayer = businessLayer ++ ServerChannelFactory.auto ++ PrometheusClient.live ++ diagnosticsLayer ++ zmxClient
 
   def run(args: List[String]): URIO[ZEnv, ExitCode] =
     val nThreads: Int = args.headOption.flatMap(x => Try(x.toInt).toOption).getOrElse(0)

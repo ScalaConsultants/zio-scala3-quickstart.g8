@@ -13,15 +13,12 @@ import java.io.IOException
 import zio.zmx.diagnostics.ZMXClient
 import zio.zmx.diagnostics.ZMXConfig
 import zio.zmx.diagnostics._
-import $package$.config.configuration.ServerConfig
+import $package$.config.configuration.DiagnosticsServerConfig
 
 object MetricsAndDiagnostics:
 
-  //TODO create ZMXConfig out of config values
-  private val zmxClient = new ZMXClient(ZMXConfig("localhost", 8081, false))
-
   //TODO make ZMX metrics & diagnostics optional
-  val exposeEndpoints: HttpApp[Has[PrometheusClient] with Has[Console.Service], Throwable] = HttpApp.collectM {
+  val exposeEndpoints: HttpApp[Has[PrometheusClient] with Has[Console.Service] with Has[ZMXClient], Throwable] = HttpApp.collectM {
     case Method.GET -> Root / "metrics" / "prometheus" =>
       PrometheusClient.snapshot.map(p => Response.text(p.value))
 
@@ -29,13 +26,18 @@ object MetricsAndDiagnostics:
       for
         cmd  <- if (Set("dump", "test") contains command.trim) ZIO.succeed(command)
                   else ZIO.fail(new RuntimeException("Invalid command"))
-        resp <- zmxClient.sendCommand(Chunk(cmd))
+                
+        resp <- ZIO.service[ZMXClient].flatMap(config => config.sendCommand(Chunk(cmd)))
       yield Response.text(resp)
 
     case Method.GET -> Root / "health" =>
         ZIO.succeed(Response.status(Status.OK))
   }
 
-  val layer: ZLayer[Clock & Console & Has[ServerConfig], Exception, Has[Diagnostics]] =
-    ZLayer.service[ServerConfig].flatMap(config => Diagnostics.make("localhost", config.get.diagnosticsPort))
+  val diagnosticsLayer: ZLayer[Clock & Console & Has[DiagnosticsServerConfig], Exception, Has[Diagnostics]] = 
+    ZLayer.service[DiagnosticsServerConfig].flatMap(config => Diagnostics.make(config.get.host, config.get.diagnosticsPort))
   
+  val zmxClientLayer : ZLayer[Has[DiagnosticsServerConfig], Throwable, Has[ZMXClient]] =
+    (for
+      config <- ZIO.service[DiagnosticsServerConfig]
+    yield (ZMXClient(ZMXConfig(config.host, config.diagnosticsPort, config.debug)))).toLayer

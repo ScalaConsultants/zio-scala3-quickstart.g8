@@ -11,13 +11,16 @@ import zhttp.test._
 import zhttp.http.HttpData.Empty
 import zio.zmx.prometheus.PrometheusClient
 import $package$.util._
+import $package$.config.configuration.DiagnosticsServerConfig
 
 object MetricsAndDiagnosticsSpec extends DefaultRunnableSpec:
+
+  private val zmxClientLayer = (DiagnosticsServerConfig.layer >>> MetricsAndDiagnostics.zmxClientLayer)
 
   def spec =
     suite("health check")(
       testM("ok status") {
         val actual = MetricsAndDiagnostics.exposeEndpoints(Request(Method.GET -> URL(Root / "health")))
-        assertM(actual)(equalTo(Response.HttpResponse(Status.OK, List(), Empty)))
+        assertM(actual)(equalTo(Response.HttpResponse(Status.OK, List(), Empty))).provideCustomLayer(zmxClientLayer ++ PrometheusClient.live)
       }
-    ).provideCustomLayer(PrometheusClient.live)
+    )

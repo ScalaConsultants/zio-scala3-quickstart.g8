@@ -11,20 +11,41 @@ import $package$.config.configuration.ServerConfig
 
 object configuration:
 
-  final case class ServerConfig(port: Int, diagnosticsPort: Int)
+  final case class ServerConfig(port: Int)
 
   object ServerConfig:
 
-    private val serverConfigDescription = (nested("server-config") {
+    private val serverConfigDescription = nested("server-config") {
       int("port").default(8090)
-    } |@| nested("server-config")(int("diagnostics-port").default(8091)))(
+    }(
       ServerConfig.apply,
-      { case ServerConfig(port, diagnosticsPort) => Some((port, diagnosticsPort)) },
+      { case ServerConfig(port) => Some((port)) },
     )
 
     val layer = IO
       .fromEither(TypesafeConfigSource.fromTypesafeConfig(ConfigFactory.defaultApplication()))
       .map(source => serverConfigDescription from source)
+      .flatMap(config => ZIO.fromEither(read(config)))
+      .mapError(e => DomainError.ConfigError(e))
+      .toLayer
+
+  final case class DiagnosticsServerConfig(host: String, diagnosticsPort: Int, debug: Boolean)
+
+  object DiagnosticsServerConfig:
+
+    private val diagnosticsConfigDescription = 
+      (nested("diagnostics-server-config"){
+        string("diagnostics-host").default("localhost")
+      } |@| nested("diagnostics-server-config"){
+        int("diagnostics-port").default(8091)
+      }
+        |@| nested("diagnostics-server-config"){
+        boolean("debug").default(false)
+      })(DiagnosticsServerConfig.apply, { case DiagnosticsServerConfig(host, diagnosticsPort, debug) => Some((host, diagnosticsPort, debug))})
+
+    val layer = IO
+      .fromEither(TypesafeConfigSource.fromTypesafeConfig(ConfigFactory.defaultApplication()))
+      .map(source => diagnosticsConfigDescription from source)
       .flatMap(config => ZIO.fromEither(read(config)))
       .mapError(e => DomainError.ConfigError(e))
       .toLayer

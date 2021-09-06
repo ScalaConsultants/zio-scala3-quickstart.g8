@@ -6,10 +6,10 @@ import zio.test.Assertion._
 import zio.test.mock.Expectation._
 import $package$.domain._
 import $package$.service._
-import $package$.service.BusinessLogicService._
+import $package$.service.ItemService._
 import $package$.repo._
 
-object BusinessLogicSpec extends DefaultRunnableSpec:
+object ItemServiceSpec extends DefaultRunnableSpec:
 
   $if(add_websocket_endpoint.truthy)$
   private val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
@@ -30,7 +30,7 @@ object BusinessLogicSpec extends DefaultRunnableSpec:
     value(Some(exampleItem)),
   ) ++ ItemRepoMock.Update(equalTo((ItemId(123), exampleItem.copy(description = "bar"))))
 
-  def spec = suite("business logic test")(
+  def spec = suite("item service test")(
     testM("get item id accept long") {
       for
         found <- assertM(getItemById("123"))(isSome(equalTo(exampleItem)))
@@ -39,15 +39,15 @@ object BusinessLogicSpec extends DefaultRunnableSpec:
           fails(equalTo(DomainError.BusinessError("Id abc is in incorrect form.")))
         )
       yield found && mising && unparseable
-    }.provideCustomLayer(getItemMock $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> BusinessLogicServiceLive.layer),
+    }.provideCustomLayer(getItemMock $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> ItemServiceLive.layer),
     suite("update item")(
       testM("non existing item") {
         assertM(updateItem("124", "bar").run)(
           fails(equalTo(DomainError.BusinessError("Item with ID 124 not found")))
         )
-      }.provideCustomLayer(getByNonExistingId $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> BusinessLogicServiceLive.layer),
+      }.provideCustomLayer(getByNonExistingId $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> ItemServiceLive.layer),
       testM("update succesfull") {
         assertM(updateItem("123", "bar"))(isUnit)
-      }.provideCustomLayer(updateSuccesfullMock $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> BusinessLogicServiceLive.layer),
+      }.provideCustomLayer(updateSuccesfullMock $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> ItemServiceLive.layer),
     ),
   )

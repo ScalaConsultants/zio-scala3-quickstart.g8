@@ -2,11 +2,8 @@ val zioVersion = "1.0.11"
 val zioHttpVersion = "1.0.0.0-RC17"
 val zioJsonVersion = "0.2.0-M1"
 
-val zioKafkaVersion = "0.15.0"
-
-
 //TODO those are only local versions => remotely not existing
-val zioZMXVersion = "0.0.8"
+val zioZMXVersion = "0.0.7"
 val zioConfigVersion = "1.0.6+26-04ae8574+20210830-1558-SNAPSHOT"
 val zioLoggingVersion = "0.5.11+25-a55eb828+20210830-1557-SNAPSHOT"
 

@@ -7,14 +7,12 @@ val zioZMXVersion = "0.0.8"
 val zioConfigVersion = "1.0.6+26-04ae8574+20210830-1558-SNAPSHOT"
 val zioLoggingVersion = "0.5.11+25-a55eb828+20210830-1557-SNAPSHOT"
 
-val zioKafkaVersion = "0.15.0"
-
 lazy val root = (project in file("."))
   .settings(
     inThisBuild(
       List(
-        name := "zio-quickstart",
-        organization := "$organization$",
+        name := "$name$",
+        organization := "$package$",
         version := "0.0.1",
         scalaVersion := "$dotty_version$",
       )

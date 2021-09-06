@@ -6,7 +6,7 @@ import $package$.domain._
 import $package$.domain.DomainError.BusinessError
 import $package$.repo._
 
-final case class BusinessLogicServiceLive(repo: ItemRepository $if(add_websocket_endpoint.truthy)$, subscriber: SubscriberService $endif$) extends BusinessLogicService:
+final case class ItemServiceLive(repo: ItemRepository $if(add_websocket_endpoint.truthy)$, subscriber: SubscriberService $endif$) extends ItemService:
   def addItem(description: String): IO[DomainError, ItemId] =
     repo.add(description)
 
@@ -49,6 +49,6 @@ final case class BusinessLogicServiceLive(repo: ItemRepository $if(add_websocket
   private def formatId(id: String): IO[DomainError, Long] =
     ZIO.fromOption(id.toLongOption).mapError(_ => BusinessError(s"Id \$id is in incorrect form."))
 
-object BusinessLogicServiceLive:
-  val layer: URLayer[Has[ItemRepository] $if(add_websocket_endpoint.truthy)$ with Has[SubscriberService] $endif$, Has[BusinessLogicService]] =
-    (BusinessLogicServiceLive(_$if(add_websocket_endpoint.truthy)$, _ $endif$)).toLayer
+object ItemServiceLive:
+  val layer: URLayer[Has[ItemRepository] $if(add_websocket_endpoint.truthy)$ with Has[SubscriberService] $endif$, Has[ItemService]] =
+    (ItemServiceLive(_$if(add_websocket_endpoint.truthy)$, _ $endif$)).toLayer

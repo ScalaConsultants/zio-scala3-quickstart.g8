@@ -57,40 +57,35 @@ object HttpRoutesSpec extends HttpRunnableSpec(8082):
   $if(add_websocket_endpoint.truthy)$
   private val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
   $endif$
-  val businessLayer = repoLayer $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> BusinessLogicServiceLive.layer
+  val businessLayer = repoLayer $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> ItemServiceLive.layer
 
   val app = serve(HttpRoutes.app)
+
+  import TestProtocolSerde._
 
   def spec = (suiteM("http routes")(
     app
       .as(
         List(
-          //TODO move to integration tests ?
           testM("end to end test") {
-            val status1 = request(Root / "item", Method.POST, s"{\"description\": \"\$firstItem\"}")
+            val status1 = request(Root / "items", Method.POST, s"{\"description\": \"\$firstItem\"}")
               .map(_.status)
-            val status2 = request(Root / "item", Method.POST, s"{\"description\": \"\$secondItem\"}")
+            val status2 = request(Root / "items", Method.POST, s"{\"description\": \"\$secondItem\"}")
               .map(_.status)
-            val status3 = request(Root / "item", Method.POST, s"{\"description\": \"\$thirdItem\"}")
+            val status3 = request(Root / "items", Method.POST, s"{\"description\": \"\$thirdItem\"}")
               .map(_.status)
             val getAll = request(Root / "items", Method.GET, "")
               .flatMap(res => getBodyAsString(res.content))
             val updateStatus = request(
-              Root / "item" / "update",
-              Method.POST,
-              UpdateItem(firstItemId.toString, updatedFirst).toJson,
+              Root / "items" / firstItemId.toString,
+              Method.PUT,
+              UpdateItem(updatedFirst).toJson,
             ).map(_.status)
-            val getSecondItem = request(Root / "item" / secondItemId.toString, Method.GET, "")
+            val getSecondItem = request(Root / "items" / secondItemId.toString, Method.GET, "")
               .flatMap(res => getBodyAsString(res.content))
             val deleteSecondItem =
-              request(Root / "item" / secondItemId.toString, Method.DELETE, "").map(_.status)
+              request(Root / "items" / secondItemId.toString, Method.DELETE, "").map(_.status)
             val getOthers = request(Root / "items", Method.GET, "")
-              .flatMap(res => getBodyAsString(res.content))
-            val getLast = request(
-              Root / "items" / "by-ids",
-              Method.GET,
-              GetItemIds(Set(thirdItemId.toString)).toJson,
-            )
               .flatMap(res => getBodyAsString(res.content))
             for
               create1 <- assertM(status1)(equalTo(Status.CREATED))
@@ -101,9 +96,8 @@ object HttpRoutesSpec extends HttpRunnableSpec(8082):
               getSecond <- assertM(getSecondItem)(equalTo(GetItem(secondItemId, secondItem).toJson))
               deleteSecond <- assertM(deleteSecondItem)(equalTo(Status.OK))
               getRest <- assertM(getOthers)(equalTo(updatedItems.toJson))
-              getThird <- assertM(getLast)(equalTo(onlyThird.toJson))
             yield (create1 && create2 && create3 && getAll1 && updateFirst &&
-            getSecond && deleteSecond && getRest && getThird)
+            getSecond && deleteSecond && getRest)
           }
         )
       )
@@ -114,3 +108,6 @@ object HttpRoutesSpec extends HttpRunnableSpec(8082):
     case HttpData.CompleteData(data) => ZIO.succeed(data.map(_.toChar).mkString)
     case _                           => ZIO.fail(new RuntimeException("unexpected content"))
   }
+
+  object TestProtocolSerde:
+    implicit val updateItemEncoder: JsonEncoder[UpdateItem] = DeriveJsonEncoder.gen[UpdateItem]

@@ -42,11 +42,10 @@ final case class ItemRepositoryLive(
   def update(id: ItemId, item: Item): IO[RepositoryError, Unit] =
     dataRef.update(map => map + (id -> item.copy(id = id)))
 
-//TODO will be deprecated in zio 2 -> change to toLayer syntax
-// maybe change zio version to 2
 object ItemRepositoryLive:
   val layer: ZLayer[Has[Random.Service] with Has[Console.Service], Nothing, Has[ItemRepository]] =
-    ZLayer.fromServicesM[Random.Service, Console.Service, Any, Nothing, ItemRepository](
-      (random, console) =>
-        Ref.make(Map.empty[ItemId, Item]).map(data => ItemRepositoryLive(random, console, data))
-    )
+    (for {
+      random  <- ZIO.service[Random.Service]
+      console <- ZIO.service[Console.Service]
+      dataRef <- Ref.make(Map.empty[ItemId, Item])
+    } yield (ItemRepositoryLive(random, console, dataRef))).toLayer
