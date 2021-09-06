@@ -5,6 +5,7 @@ val zioJsonVersion = "0.2.0-M1"
 val zioConfigVersion = "1.0.6"
 val zioLoggingVersion = "0.5.11"
 val zioKafkaVersion = "0.15.0"
+val calibanVersion = "1.1.1"
 
 lazy val root = (project in file("."))
   .settings(
@@ -23,6 +24,8 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio" % zioVersion,
       "dev.zio" %% "zio-streams" % zioVersion,
+      "com.github.ghostdogpr" %% "caliban" % calibanVersion,
+      "com.github.ghostdogpr" %% "caliban-zio-http" % calibanVersion,
       "io.d11" %% "zhttp" % zioHttpVersion,
       "io.d11" %% "zhttp-test" % "1.0.0.0-RC17+37-1c8ceea7-SNAPSHOT" % Test,
       // TODO add below based on add_zio_kafka=yes condition in default.properties

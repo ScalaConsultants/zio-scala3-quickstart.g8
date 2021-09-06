@@ -5,6 +5,7 @@ val zioJsonVersion = "0.2.0-M1"
 val zioConfigVersion = "1.0.6"
 val zioLoggingVersion = "0.5.11"
 val zioKafkaVersion = "0.15.0"
+val calibanVersion = "1.1.1"
 
 // This build is for this Giter8 template.
 // To test the template run `g8` or `g8Test` from the sbt session.
@@ -17,6 +18,8 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio" % zioVersion,
       "dev.zio" %% "zio-streams" % zioVersion,
+      "com.github.ghostdogpr" %% "caliban" % calibanVersion,
+      "com.github.ghostdogpr" %% "caliban-zio-http" % calibanVersion,
       "io.d11" %% "zhttp" % zioHttpVersion,
       "io.d11" %% "zhttp-test" % "1.0.0.0-RC17+37-1c8ceea7-SNAPSHOT" % Test,
 //      "dev.zio" %% "zio-config" % zioConfigVersion,
