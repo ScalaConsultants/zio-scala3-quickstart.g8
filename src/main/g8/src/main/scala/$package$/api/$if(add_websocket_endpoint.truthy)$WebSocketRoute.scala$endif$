@@ -5,8 +5,8 @@ import zhttp.http._
 import zhttp.socket._
 import zio.stream._
 import zio.console._
-import $package$.service.BusinessLogicService._
-import $package$.service.BusinessLogicService
+import $package$.service.ItemService._
+import $package$.service.ItemService
 
 object WebSocketRoute:
   private val open = Socket.succeed(WebSocketFrame.text("ws openned!"))
@@ -34,6 +34,6 @@ object WebSocketRoute:
       ++ SocketApp.error(_ => putStrLn("Error!").ignore)
       ++ SocketApp.decoder(decoder)
 
-  val socketImpl: HttpApp[Has[BusinessLogicService] with Console, Throwable] = HttpApp.collectM {
+  val socketImpl: HttpApp[Has[ItemService] with Console, Throwable] = HttpApp.collectM {
     case Method.GET -> Root / "ws" / "items" => Task.effect(socketApp)
   }
