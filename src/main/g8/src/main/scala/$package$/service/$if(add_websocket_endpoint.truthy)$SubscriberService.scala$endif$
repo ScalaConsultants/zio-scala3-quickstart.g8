@@ -1,8 +1,8 @@
 package $package$.service
 
 import $package$.domain.ItemId
-import zio.*
-import zio.stream.*
+import zio._
+import zio.stream._
 
 trait SubscriberService:
   def publishDeleteEvents(deletedItemId: ItemId): IO[Nothing, List[Boolean]]

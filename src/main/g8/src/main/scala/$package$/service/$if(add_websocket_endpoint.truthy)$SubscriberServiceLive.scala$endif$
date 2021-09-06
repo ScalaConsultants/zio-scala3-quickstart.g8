@@ -1,8 +1,8 @@
 package $package$.service
 
 import $package$.domain.ItemId
-import zio.*
-import zio.stream.*
+import zio._
+import zio.stream._
 
 final case class SubscriberServiceLive(deletedEventsSubscribers: Ref[List[Queue[ItemId]]])
     extends SubscriberService:
@@ -17,6 +17,7 @@ final case class SubscriberServiceLive(deletedEventsSubscribers: Ref[List[Queue[
           )
       }
     }
+
   override def showDeleteEvents: Stream[Nothing, ItemId] = ZStream.unwrap {
     for {
       queue <- Queue.unbounded[ItemId]
