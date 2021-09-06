@@ -14,9 +14,9 @@ lazy val root = (project in file("."))
     inThisBuild(
       List(
         name := "zio-quickstart",
-        organization := "com.example",
+        organization := "$organization$",
         version := "0.0.1",
-        scalaVersion := "3.0.2",
+        scalaVersion := "$dotty_version$",
       )
     ),
     // TODO remove, temporary solution to find zhttp-test
