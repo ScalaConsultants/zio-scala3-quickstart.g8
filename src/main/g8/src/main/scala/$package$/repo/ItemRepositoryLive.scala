@@ -7,10 +7,8 @@ import $package$.domain._
 import $package$.domain.DomainError.RepositoryError
 
 // TODO switch Random and Ref[Map[ItemId, Item]] with some DBClient and store to DB not to in memory Map
-// TODO switch console with zio-logging
 final case class ItemRepositoryLive(
     random: Random.Service,
-    console: Console.Service,
     dataRef: Ref[Map[ItemId, Item]],
   ) extends ItemRepository:
 
@@ -43,9 +41,8 @@ final case class ItemRepositoryLive(
     dataRef.update(map => map + (id -> item.copy(id = id)))
 
 object ItemRepositoryLive:
-  val layer: ZLayer[Has[Random.Service] with Has[Console.Service], Nothing, Has[ItemRepository]] =
+  val layer: ZLayer[Has[Random.Service], Nothing, Has[ItemRepository]] =
     (for {
       random  <- ZIO.service[Random.Service]
-      console <- ZIO.service[Console.Service]
       dataRef <- Ref.make(Map.empty[ItemId, Item])
-    } yield (ItemRepositoryLive(random, console, dataRef))).toLayer
+    } yield (ItemRepositoryLive(random, dataRef))).toLayer

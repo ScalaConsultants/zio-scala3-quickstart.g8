@@ -31,12 +31,6 @@ final case class ItemServiceLive(repo: ItemRepository $if(add_websocket_endpoint
       items <- repo.getById(itemId)
     yield items
 
-  def getItemsByIds(ids: Set[String]): IO[DomainError, List[Item]] =
-    for
-      itemIds <- ZIO.foreach(ids)(id => formatId(id))
-      items <- repo.getByIds(itemIds.map(ItemId(_)))
-    yield items
-
   def updateItem(id: String, description: String): IO[DomainError, Unit] =
     for
       foundOption <- getItemById(id)

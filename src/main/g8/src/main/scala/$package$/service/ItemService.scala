@@ -17,8 +17,6 @@ trait ItemService:
 
   def getItemById(id: String): IO[DomainError, Option[Item]]
 
-  def getItemsByIds(ids: Set[String]): IO[DomainError, List[Item]]
-
   def updateItem(id: String, description: String): IO[DomainError, Unit]
 
 object ItemService:
@@ -38,9 +36,6 @@ object ItemService:
 
   def getItemById(id: String): ZIO[Has[ItemService], DomainError, Option[Item]] =
     ZIO.serviceWith[ItemService](_.getItemById(id))
-
-  def getItemsByIds(ids: Set[String]): ZIO[Has[ItemService], DomainError, List[Item]] =
-    ZIO.serviceWith[ItemService](_.getItemsByIds(ids))
 
   def updateItem(
       id: String,

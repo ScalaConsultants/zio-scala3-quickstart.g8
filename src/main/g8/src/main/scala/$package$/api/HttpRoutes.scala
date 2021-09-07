@@ -12,36 +12,38 @@ import $package$.service.ItemService._
 
 object HttpRoutes:
 
-  val app: HttpApp[Has[ItemService], Throwable] = HttpApp.collectM {
+  val app: HttpApp[Has[ItemService] with Has[Logger[String]], Throwable] = HttpApp.collectM {
     case Method.GET -> Root / "items" =>
       getAllItems().map(items =>
         Response.jsonString(
           GetItems(items.map(item => GetItem(item.id.value, item.description))).toJson
         )
-      ) @@ MetricAspect.count("get_items_counts")
+      ) @@ addCounter("get_items_counter") @@ addDurationMetric("get_items_duration")
 
     case Method.GET -> Root / "items" / id =>
       (getItemById(id)
         .some
         .tapError {
-          case Some(exception) => ZIO.unit
-          case None            => ZIO.unit //TODO log error Item with id does not exist
-        } @@ MetricAspect.count("get_item", "item_id" -> id))
+          case Some(exception) => 
+            log.info(s"Exception occured when getting item for id $id ${exception.msg}")
+          case None => log.info(s"No item with id $id exists.")
+        } @@ addCounter("get_item_counter", Some(id)))
         .either
         .map {
           case Right(item) => Response.jsonString(GetItem(item.id.value, item.description).toJson)
           case Left(_)     => Response.status(Status.NOT_FOUND)
-        } 
+        } @@ addDurationMetric("get_item_duration")
 
     case Method.DELETE -> Root / "items" / id =>
       deleteItem(id)
-        .tapError(e => ZIO.unit //TODO log
-        )
+        .tapError(e => log.info(s"Error occured when deleting item with id $id, ${e.msg}"))
         .either
         .map {
           case Right(_) => Response.ok
           case Left(_)  => Response.status(Status.NOT_FOUND)
-        } @@ MetricAspect.count("delete_item", "item_id" -> id)
+        } @@ addCounter("delete_item_counter", Some(id)) @@ addDurationMetric(
+        "delete_item_duration"
+      )
 
     case req @ Method.POST -> Root / "items" =>
       (for
@@ -49,7 +51,7 @@ object HttpRoutes:
           .fromOption(req.getBodyAsString)
           .map(_.fromJson[CreateItem])
           .absolve
-          .tapError(_ => ZIO.unit) //TODO log Unparseable body
+          .tapError(_ => log.info(s"Unparseable body ${req.getBodyAsString}"))
         id <- addItem(body.description)
       yield GetItem(id.value, body.description)).either.map {
         case Right(created) =>
@@ -59,10 +61,7 @@ object HttpRoutes:
             HttpData.CompleteData(Chunk.fromArray(created.toJson.getBytes(HTTP_CHARSET))),
           )
         case Left(_) => Response.status(Status.BAD_REQUEST)
-      } @@ MetricAspect.count("create_item") @@ MetricAspect.observeDurations(
-        "create_item",
-        defaultBuckets,
-      )(d => d.toMillis.toDouble)
+      } @@ addCounter("create_item_counter") @@ addDurationMetric("create_item_duration")
 
     case req @ Method.PUT -> Root / "items" / id =>
       (for
@@ -70,15 +69,24 @@ object HttpRoutes:
           .fromOption(req.getBodyAsString)
           .map(_.fromJson[UpdateItem])
           .absolve
-          .tapError(_ => ZIO.unit) //TODO log Unparseable body
-        _ <- updateItem(id, update.description) @@ MetricAspect.count(
-          "update_item",
-          "item_id" -> id,
-        )
+          .tapError(_ => log.info(s"Unparseable body ${req.getBodyAsString}"))
+        _ <- updateItem(id, update.description) @@ addCounter("update_item", Some(id))
       yield ()).either.map {
         case Left(_)  => Response.status(Status.BAD_REQUEST)
         case Right(_) => Response.ok
-      }
+      } @@ addDurationMetric("update_item_duration")
   }
 
-  private val defaultBuckets = Chunk(5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000).map(_.toDouble)
+  private def addDurationMetric(metricName: String): MetricAspect[Any] =
+    MetricAspect.observeDurations(
+      metricName,
+      defaultBuckets,
+    )(d => d.toMillis.toDouble)
+
+  private def addCounter(metricName: String, optionId: Option[String] = None): MetricAspect[Any] =
+    optionId match
+      case Some(id) => MetricAspect.count(metricName, "item_id" -> id)
+      case None     => MetricAspect.count(metricName)
+
+  private val defaultBuckets =
+    Chunk(5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000).map(_.toDouble)

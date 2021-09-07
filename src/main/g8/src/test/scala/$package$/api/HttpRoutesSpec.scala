@@ -47,17 +47,17 @@ object HttpRoutesSpec extends HttpRunnableSpec(8082):
   )
   private val onlyThird = GetItems(List(GetItem(thirdItemId, thirdItem)))
 
-  val mockRandomEnv: ULayer[Random] =
+  private val mockRandomEnv: ULayer[Random] =
     MockRandom.NextLong(value(firstItemId)) ++ MockRandom.NextLong(
       value(secondItemId)
     ) ++ MockRandom.NextLong(
       value(thirdItemId)
     )
-  val repoLayer = (Console.live ++ mockRandomEnv) >>> ItemRepositoryLive.layer
-  $if(add_websocket_endpoint.truthy)$
-  private val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
-  $endif$
-  val businessLayer = repoLayer $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> ItemServiceLive.layer
+  private val repoLayer = mockRandomEnv >>> ItemRepositoryLive.layer
+  private val subscriberLayer =
+    ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
+  private val businessLayer =
+    repoLayer ++ subscriberLayer >>> ItemServiceLive.layer ++ Logging.ignore
 
   val app = serve(HttpRoutes.app)
 
@@ -68,11 +68,12 @@ object HttpRoutesSpec extends HttpRunnableSpec(8082):
       .as(
         List(
           testM("end to end test") {
-            val status1 = request(Root / "items", Method.POST, s"{\"description\": \"\$firstItem\"}")
+            val status1 = request(Root / "items", Method.POST, s"{\"description\": \"$firstItem\"}")
               .map(_.status)
-            val status2 = request(Root / "items", Method.POST, s"{\"description\": \"\$secondItem\"}")
-              .map(_.status)
-            val status3 = request(Root / "items", Method.POST, s"{\"description\": \"\$thirdItem\"}")
+            val status2 =
+              request(Root / "items", Method.POST, s"{\"description\": \"$secondItem\"}")
+                .map(_.status)
+            val status3 = request(Root / "items", Method.POST, s"{\"description\": \"$thirdItem\"}")
               .map(_.status)
             val getAll = request(Root / "items", Method.GET, "")
               .flatMap(res => getBodyAsString(res.content))

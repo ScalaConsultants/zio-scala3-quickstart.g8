@@ -12,6 +12,7 @@ import zio.zmx._
 import zio.zmx.diagnostics._
 import zio.config._
 import zio.clock.Clock
+import zio.logging._
 import $package$.config.configuration.ServerConfig
 import $package$.service._
 import $package$.repo._
@@ -21,16 +22,25 @@ import $package$.config.configuration._
 
 object Main extends zio.App:
 
-  private val clockConsole = Clock.live ++ Console.live
-  private val repoLayer = (Random.live ++ Console.live) >>> ItemRepositoryLive.layer
-  $if(add_websocket_endpoint.truthy)$
-  private val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
-  $endif$
-  private val businessLayer = repoLayer  $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$  >>> ItemServiceLive.layer
-  private val zmxClient = (clockConsole ++ DiagnosticsServerConfig.layer) >>> MetricsAndDiagnostics.zmxClientLayer
+  //TODO HttpRoutesSpec failing because of Logging mock
+  //TODO make metrics optional
 
-  private val diagnosticsLayer = (clockConsole ++ DiagnosticsServerConfig.layer) >>> MetricsAndDiagnostics.diagnosticsLayer
-  private val applicatonLayer = businessLayer ++ ServerChannelFactory.auto ++ PrometheusClient.live ++ diagnosticsLayer ++ zmxClient
+  private val clockConsole = Clock.live ++ Console.live
+  private val loggingEnv = clockConsole >>> Logging.console(
+    logLevel = LogLevel.Info,
+    format = LogFormat.ColoredLogFormat(),
+  ) >>> Logging.withRootLoggerName("$name")
+  private val repoLayer = Random.live >>> ItemRepositoryLive.layer
+  private val subscriberLayer =
+    ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
+  private val businessLayer = repoLayer ++ subscriberLayer >>> ItemServiceLive.layer
+  private val zmxClient =
+    (clockConsole ++ DiagnosticsServerConfig.layer) >>> MetricsAndDiagnostics.zmxClientLayer
+
+  private val diagnosticsLayer =
+    (clockConsole ++ DiagnosticsServerConfig.layer) >>> MetricsAndDiagnostics.diagnosticsLayer
+  private val applicatonLayer =
+    businessLayer ++ ServerChannelFactory.auto ++ PrometheusClient.live ++ diagnosticsLayer ++ zmxClient
 
   def run(args: List[String]): URIO[ZEnv, ExitCode] =
     val nThreads: Int = args.headOption.flatMap(x => Try(x.toInt).toOption).getOrElse(0)
@@ -39,13 +49,19 @@ object Main extends zio.App:
 
     getConfig[ServerConfig]
       .flatMap(config =>
-          setupServer(config.port)
-            .make
-            .use(_ => console.putStrLn(s"Server started on port \${config.port}") *> ZIO.never)
+        setupServer(config.port)
+          .make
+          .use(_ => log.info(s"Server started on port \${config.port}") *> ZIO.never)
       )
-      .provideLayer(applicatonLayer ++ ZEnv.live ++ ServerConfig.layer ++ EventLoopGroup.auto(nThreads))
+      .provideLayer(
+        applicatonLayer ++ ZEnv.live ++ ServerConfig.layer ++ EventLoopGroup.auto(
+          nThreads
+        ) ++ loggingEnv
+      )
       .exitCode
 
   def setupServer(port: Int) =
     Server.port(port) ++
-      Server.app(MetricsAndDiagnostics.exposeEndpoints +++ HttpRoutes.app $if(add_websocket_endpoint.truthy)$ +++ WebSocketRoute.socketImpl $endif$)
+      Server.app(
+        MetricsAndDiagnostics.exposeEndpoints +++ HttpRoutes.app +++ WebSocketRoute.socketImpl
+      )
