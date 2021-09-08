@@ -29,7 +29,7 @@ object Main extends zio.App:
   private val loggingEnv = clockConsole >>> Logging.console(
     logLevel = LogLevel.Info,
     format = LogFormat.ColoredLogFormat(),
-  ) >>> Logging.withRootLoggerName("$name")
+  ) >>> Logging.withRootLoggerName("zio-quickstart")
   private val repoLayer = Random.live >>> ItemRepositoryLive.layer
   private val subscriberLayer =
     ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer

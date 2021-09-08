@@ -25,8 +25,8 @@ object HttpRoutes:
         .some
         .tapError {
           case Some(exception) => 
-            log.info(s"Exception occured when getting item for id $id ${exception.msg}")
-          case None => log.info(s"No item with id $id exists.")
+            log.info(s"Exception occured when getting item for id \$id \${exception.msg}")
+          case None => log.info(s"No item with id \$id exists.")
         } @@ addCounter("get_item_counter", Some(id)))
         .either
         .map {
@@ -36,7 +36,7 @@ object HttpRoutes:
 
     case Method.DELETE -> Root / "items" / id =>
       deleteItem(id)
-        .tapError(e => log.info(s"Error occured when deleting item with id $id, ${e.msg}"))
+        .tapError(e => log.info(s"Error occured when deleting item with id \$id, \${e.msg}"))
         .either
         .map {
           case Right(_) => Response.ok
@@ -51,7 +51,7 @@ object HttpRoutes:
           .fromOption(req.getBodyAsString)
           .map(_.fromJson[CreateItem])
           .absolve
-          .tapError(_ => log.info(s"Unparseable body ${req.getBodyAsString}"))
+          .tapError(_ => log.info(s"Unparseable body \${req.getBodyAsString}"))
         id <- addItem(body.description)
       yield GetItem(id.value, body.description)).either.map {
         case Right(created) =>
@@ -69,7 +69,7 @@ object HttpRoutes:
           .fromOption(req.getBodyAsString)
           .map(_.fromJson[UpdateItem])
           .absolve
-          .tapError(_ => log.info(s"Unparseable body ${req.getBodyAsString}"))
+          .tapError(_ => log.info(s"Unparseable body \${req.getBodyAsString}"))
         _ <- updateItem(id, update.description) @@ addCounter("update_item", Some(id))
       yield ()).either.map {
         case Left(_)  => Response.status(Status.BAD_REQUEST)

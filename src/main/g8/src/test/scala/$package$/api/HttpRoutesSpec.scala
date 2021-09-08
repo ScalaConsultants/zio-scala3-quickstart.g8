@@ -68,12 +68,12 @@ object HttpRoutesSpec extends HttpRunnableSpec(8082):
       .as(
         List(
           testM("end to end test") {
-            val status1 = request(Root / "items", Method.POST, s"{\"description\": \"$firstItem\"}")
+            val status1 = request(Root / "items", Method.POST, s"{\"description\": \"\$firstItem\"}")
               .map(_.status)
             val status2 =
-              request(Root / "items", Method.POST, s"{\"description\": \"$secondItem\"}")
+              request(Root / "items", Method.POST, s"{\"description\": \"\$secondItem\"}")
                 .map(_.status)
-            val status3 = request(Root / "items", Method.POST, s"{\"description\": \"$thirdItem\"}")
+            val status3 = request(Root / "items", Method.POST, s"{\"description\": \"\$thirdItem\"}")
               .map(_.status)
             val getAll = request(Root / "items", Method.GET, "")
               .flatMap(res => getBodyAsString(res.content))
