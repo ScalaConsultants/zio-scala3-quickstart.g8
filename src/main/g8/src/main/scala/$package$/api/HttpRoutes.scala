@@ -5,20 +5,23 @@ import zhttp.service._
 import zio._
 import zio.json._
 import zhttp.http.ResponseHelpers
+$if(add_metrics.truthy)$
 import zio.zmx.metrics._
+$endif$
+import zio.logging._
 import $package$.api.protocol._
 import $package$.service.ItemService
 import $package$.service.ItemService._
 
 object HttpRoutes:
 
-  val app: HttpApp[Has[ItemService] with Has[Logger[String]], Throwable] = HttpApp.collectM {
+  val app: HttpApp[Has[ItemService] with Logging, Throwable] = HttpApp.collectM {
     case Method.GET -> Root / "items" =>
       getAllItems().map(items =>
         Response.jsonString(
           GetItems(items.map(item => GetItem(item.id.value, item.description))).toJson
         )
-      ) @@ addCounter("get_items_counter") @@ addDurationMetric("get_items_duration")
+      ) $if(add_metrics.truthy)$@@ addCounter("get_items_counter") @@ addDurationMetric("get_items_duration")$endif$
 
     case Method.GET -> Root / "items" / id =>
       (getItemById(id)
@@ -27,12 +30,13 @@ object HttpRoutes:
           case Some(exception) => 
             log.info(s"Exception occured when getting item for id \$id \${exception.msg}")
           case None => log.info(s"No item with id \$id exists.")
-        } @@ addCounter("get_item_counter", Some(id)))
+        }
+         $if(add_metrics.truthy)$@@ addCounter("get_item_counter", Some(id))$endif$)
         .either
         .map {
           case Right(item) => Response.jsonString(GetItem(item.id.value, item.description).toJson)
           case Left(_)     => Response.status(Status.NOT_FOUND)
-        } @@ addDurationMetric("get_item_duration")
+        } $if(add_metrics.truthy)$@@ addDurationMetric("get_item_duration")$endif$
 
     case Method.DELETE -> Root / "items" / id =>
       deleteItem(id)
@@ -41,9 +45,9 @@ object HttpRoutes:
         .map {
           case Right(_) => Response.ok
           case Left(_)  => Response.status(Status.NOT_FOUND)
-        } @@ addCounter("delete_item_counter", Some(id)) @@ addDurationMetric(
+        } $if(add_metrics.truthy)$@@ addCounter("delete_item_counter", Some(id)) @@ addDurationMetric(
         "delete_item_duration"
-      )
+      )$endif$
 
     case req @ Method.POST -> Root / "items" =>
       (for
@@ -61,7 +65,7 @@ object HttpRoutes:
             HttpData.CompleteData(Chunk.fromArray(created.toJson.getBytes(HTTP_CHARSET))),
           )
         case Left(_) => Response.status(Status.BAD_REQUEST)
-      } @@ addCounter("create_item_counter") @@ addDurationMetric("create_item_duration")
+      } $if(add_metrics.truthy)$@@ addCounter("create_item_counter") @@ addDurationMetric("create_item_duration")$endif$
 
     case req @ Method.PUT -> Root / "items" / id =>
       (for
@@ -70,13 +74,14 @@ object HttpRoutes:
           .map(_.fromJson[UpdateItem])
           .absolve
           .tapError(_ => log.info(s"Unparseable body \${req.getBodyAsString}"))
-        _ <- updateItem(id, update.description) @@ addCounter("update_item", Some(id))
+        _ <- updateItem(id, update.description) $if(add_metrics.truthy)$@@ addCounter("update_item", Some(id))$endif$
       yield ()).either.map {
         case Left(_)  => Response.status(Status.BAD_REQUEST)
         case Right(_) => Response.ok
-      } @@ addDurationMetric("update_item_duration")
+      } $if(add_metrics.truthy)$@@ addDurationMetric("update_item_duration")$endif$
   }
 
+$if(add_metrics.truthy)$
   private def addDurationMetric(metricName: String): MetricAspect[Any] =
     MetricAspect.observeDurations(
       metricName,
@@ -90,3 +95,4 @@ object HttpRoutes:
 
   private val defaultBuckets =
     Chunk(5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000).map(_.toDouble)
+$endif$

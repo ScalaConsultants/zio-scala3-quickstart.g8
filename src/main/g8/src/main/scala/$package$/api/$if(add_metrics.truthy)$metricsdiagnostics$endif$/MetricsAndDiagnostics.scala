@@ -17,7 +17,6 @@ import $package$.config.configuration.DiagnosticsServerConfig
 
 object MetricsAndDiagnostics:
 
-  //TODO make ZMX metrics & diagnostics optional
   val exposeEndpoints: HttpApp[Has[PrometheusClient] with Has[Console.Service] with Has[ZMXClient], Throwable] = HttpApp.collectM {
     case Method.GET -> Root / "metrics" / "prometheus" =>
       PrometheusClient.snapshot.map(p => Response.text(p.value))

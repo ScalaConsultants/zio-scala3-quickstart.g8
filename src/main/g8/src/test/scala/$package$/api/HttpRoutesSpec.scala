@@ -8,7 +8,6 @@ import zhttp.service.server.ServerChannelFactory
 import zio._
 import zio.random._
 import zio.test.TestAspect._
-import zio.console._
 import zio.json._
 import zio.test.mock._
 import zhttp.test.HttpWithTest
@@ -16,6 +15,7 @@ import zio.test.Assertion._
 import zio.test.mock.Expectation._
 import zio.test.mock.MockRandom
 import zhttp.http.HttpData.StreamData
+import zio.logging._
 import $package$.Main
 import $package$.repo._
 import $package$.service._
@@ -25,15 +25,13 @@ import $package$.domain._
 
 object HttpRoutesSpec extends HttpRunnableSpec(8082):
 
-  private val env = EventLoopGroup.auto() ++ ChannelFactory.auto ++ ServerChannelFactory.auto
-
   private val firstItem = "first description"
-  private val firstItemId = 12345L
+  private val firstItemId = createDummyId(firstItem)
   private val updatedFirst = "new description"
   private val secondItem = "second description"
-  private val secondItemId = 23456L
+  private val secondItemId = createDummyId(secondItem)
   private val thirdItem = "third description"
-  private val thirdItemId = 5678L
+  private val thirdItemId = createDummyId(thirdItem)
 
   private val originItems = GetItems(
     List(
@@ -47,23 +45,16 @@ object HttpRoutesSpec extends HttpRunnableSpec(8082):
   )
   private val onlyThird = GetItems(List(GetItem(thirdItemId, thirdItem)))
 
-  private val mockRandomEnv: ULayer[Random] =
-    MockRandom.NextLong(value(firstItemId)) ++ MockRandom.NextLong(
-      value(secondItemId)
-    ) ++ MockRandom.NextLong(
-      value(thirdItemId)
-    )
-  private val repoLayer = mockRandomEnv >>> ItemRepositoryLive.layer
-  private val subscriberLayer =
-    ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
-  private val businessLayer =
-    repoLayer ++ subscriberLayer >>> ItemServiceLive.layer ++ Logging.ignore
+  private val env =
+    EventLoopGroup.auto() +!+ ChannelFactory.auto +!+ ServerChannelFactory.auto
+  private val businessLayer: ZLayer[Any, Nothing, Has[ItemService] with Has[Logger[String]]] =
+    ItemServiceSpec.testLayer +!+ Logging.ignore
 
   val app = serve(HttpRoutes.app)
 
   import TestProtocolSerde._
 
-  def spec = (suiteM("http routes")(
+  def spec = suiteM("http routes")(
     app
       .as(
         List(
@@ -103,12 +94,15 @@ object HttpRoutesSpec extends HttpRunnableSpec(8082):
         )
       )
       .useNow
-  )).provideCustomLayerShared(businessLayer ++ env)
+  ).provideLayer(businessLayer +!+ env)
 
   def getBodyAsString(body: HttpData[Any, Nothing]): IO[Throwable, String] = body match {
     case HttpData.CompleteData(data) => ZIO.succeed(data.map(_.toChar).mkString)
     case _                           => ZIO.fail(new RuntimeException("unexpected content"))
   }
+
+  def createDummyId(input: String) =
+    input.hashCode.abs.toLong
 
   object TestProtocolSerde:
     implicit val updateItemEncoder: JsonEncoder[UpdateItem] = DeriveJsonEncoder.gen[UpdateItem]
