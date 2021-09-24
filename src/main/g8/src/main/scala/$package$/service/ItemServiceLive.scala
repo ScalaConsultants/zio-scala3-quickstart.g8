@@ -6,7 +6,7 @@ import $package$.domain._
 import $package$.domain.DomainError.BusinessError
 import $package$.repo._
 
-final case class ItemServiceLive(repo: ItemRepository $if(add_websocket_endpoint.truthy)$, subscriber: SubscriberService $endif$) extends ItemService:
+final class ItemServiceLive(repo: ItemRepository $if(add_websocket_endpoint.truthy)$, subscriber: SubscriberService $endif$) extends ItemService:
   def addItem(description: String): IO[DomainError, ItemId] =
     repo.add(description)
 

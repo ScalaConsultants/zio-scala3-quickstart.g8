@@ -14,6 +14,9 @@ import zio.zmx.diagnostics._
 $endif$
 import zio.config._
 import zio.clock.Clock
+import io.getquill.context.ZioJdbc.QDataSource
+import zio.blocking.Blocking
+import io.getquill.context.ZioJdbc.QConnection
 import zio.logging._
 import $package$.config.configuration.ServerConfig
 import $package$.service._
@@ -31,7 +34,9 @@ object Main extends zio.App:
     logLevel = LogLevel.Info,
     format = LogFormat.ColoredLogFormat(),
   ) >>> Logging.withRootLoggerName("$name$")
-  private val repoLayer = Random.live >>> ItemRepositoryLive.layer
+  private val connection = 
+    Blocking.live >>> (QDataSource.fromPrefix("testPostgresDB") >>> QDataSource.toConnection)
+  private val repoLayer = (loggingEnv ++ connection) >>> ItemRepositoryLive.layer
   $if(add_websocket_endpoint.truthy)$
   private val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
   $endif$
