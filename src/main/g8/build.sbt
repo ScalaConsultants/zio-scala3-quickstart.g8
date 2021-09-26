@@ -1,19 +1,21 @@
 val zioVersion = "1.0.12"
 val zioHttpVersion = "1.0.0.0-RC17"
 val zioJsonVersion = "0.2.0-M1"
-
-val zioConfigVersion = "1.0.6"
-val zioLoggingVersion = "0.5.11"
-val zioKafkaVersion = "0.15.0"
+$if(add_metrics.truthy)$
+val zioZMXVersion = "0.0.8"
+$endif$
+val zioLoggingVersion = "0.5.12"
+val logbackVersion = "1.2.6"
+val zioConfigVersion = "1.0.9"
 
 lazy val root = (project in file("."))
   .settings(
     inThisBuild(
       List(
-        name := "zio-quickstart",
-        organization := "com.example",
+        name := "$name$",
+        organization := "$package$",
         version := "0.0.1",
-        scalaVersion := "3.0.1",
+        scalaVersion := "$dotty_version$",
       )
     ),
     // TODO remove, temporary solution to find zhttp-test
@@ -25,14 +27,14 @@ lazy val root = (project in file("."))
       "dev.zio" %% "zio-streams" % zioVersion,
       "io.d11" %% "zhttp" % zioHttpVersion,
       "io.d11" %% "zhttp-test" % "1.0.0.0-RC17+37-1c8ceea7-SNAPSHOT" % Test,
-      // TODO add below based on add_zio_kafka=yes condition in default.properties
-      // "dev.zio" %% "zio-kafka"         % zioKafkaVersion,
-      // TODO add here once new realease compatible with scala 3 is pushed
-      // https://github.com/zio/zio-logging/pull/306
-      // https://github.com/zio/zio-config/pull/599
-      // "dev.zio" %% "zio-config" % zioConfigVersion,
-      // "dev.zio" %% "zio-logging" % zioLoggingVersion,
-      // "dev.zio" %% "zio-logging-slf4j" % zioLoggingVersion,
+      "dev.zio" %% "zio-config" % zioConfigVersion,
+      "dev.zio" %% "zio-config-typesafe" % zioConfigVersion,
+      "dev.zio" %% "zio-logging" % zioLoggingVersion,
+      "dev.zio" %% "zio-logging-slf4j" % zioLoggingVersion,
+      "ch.qos.logback" % "logback-classic" % logbackVersion,
+      $if(add_metrics.truthy)$
+      "dev.zio" %% "zio-zmx" % zioZMXVersion,
+      $endif$
       "dev.zio" %% "zio-json" % zioJsonVersion,
       "dev.zio" %% "zio-test" % zioVersion % Test,
       "dev.zio" %% "zio-test-sbt" % zioVersion % Test,
