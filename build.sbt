@@ -4,7 +4,7 @@ val zioJsonVersion = "0.2.0-M1"
 val zioZMXVersion = "0.0.8"
 val zioLoggingVersion = "0.5.12"
 val logbackVersion = "1.2.6"
-val zioConfigVersion = "1.0.9"
+val zioConfigVersion = "1.0.10"
 
 // This build is for this Giter8 template.
 // To test the template run `g8` or `g8Test` from the sbt session.
