@@ -6,10 +6,10 @@ val zioZMXVersion = "0.0.8"
 $endif$
 val zioLoggingVersion = "0.5.12"
 val logbackVersion = "1.2.6"
-val zioConfigVersion = "1.0.9"
 val testcontainersVersion      = "1.16.0"
 val testcontainersScalaVersion = "0.39.8"
 val quillVersion = "3.7.2.Beta1.4"
+val zioConfigVersion = "1.0.10"
 
 lazy val root = (project in file("."))
   .settings(
