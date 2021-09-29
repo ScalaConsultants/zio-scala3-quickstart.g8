@@ -1,9 +1,9 @@
-package io.ernestochero.api
+package $package$.api
 
 import caliban._
 import caliban.CalibanError.ValidationError
 import caliban.{ CalibanError, GraphQLInterpreter, ZHttpAdapter }
-import io.ernestochero.service.ItemService
+import $package$.service.ItemService
 import zio._
 import zio.stream._
 import zhttp.http._

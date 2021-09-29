@@ -1,4 +1,4 @@
-package io.ernestochero.api
+package $package$.api
 
 import caliban.GraphQL
 import caliban.GraphQL.graphQL
@@ -7,9 +7,9 @@ import caliban.schema.Annotations.{ GQLDeprecated, GQLDescription }
 import caliban.schema.{ ArgBuilder, GenericSchema, Schema }
 import caliban.wrappers.ApolloTracing.apolloTracing
 import caliban.wrappers.Wrappers._
-import io.ernestochero.domain._
-import io.ernestochero.service.ItemService
-import io.ernestochero.service.ItemService._
+import $package$.domain._
+import $package$.service.ItemService
+import $package$.service.ItemService._
 import zio.clock.Clock
 import zio.console.Console
 import zio.duration._

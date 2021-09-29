@@ -1,6 +1,6 @@
 package $package$.repo
 
-import zio._
+import zio.{IO, ZLayer, ZIO, Has}
 import io.getquill._
 import io.getquill.context.ZioJdbc._
 import zio.blocking.Blocking
