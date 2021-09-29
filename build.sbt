@@ -6,7 +6,7 @@ val zioLoggingVersion = "0.5.12"
 val logbackVersion = "1.2.6"
 val testcontainersVersion      = "1.16.0"
 val testcontainersScalaVersion = "0.39.8"
-val quillVersion = "3.7.2.Beta1.4"
+val quillVersion = "3.7.2"
 val zioConfigVersion = "1.0.10"
 
 // This build is for this Giter8 template.
