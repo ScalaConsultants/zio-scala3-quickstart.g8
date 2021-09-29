@@ -1,20 +1,25 @@
-val zioVersion = "1.0.11"
+val zioVersion = "1.0.12"
 val zioHttpVersion = "1.0.0.0-RC17"
 val zioJsonVersion = "0.2.0-M1"
-
-val zioConfigVersion = "1.0.6"
-val zioLoggingVersion = "0.5.11"
-val zioKafkaVersion = "0.15.0"
+$if(add_metrics.truthy)$
+val zioZMXVersion = "0.0.8"
+$endif$
+val zioLoggingVersion = "0.5.12"
+val logbackVersion = "1.2.6"
+val testcontainersVersion      = "1.16.0"
+val testcontainersScalaVersion = "0.39.8"
+val quillVersion = "3.7.2.Beta1.4"
+val zioConfigVersion = "1.0.10"
 val calibanVersion = "1.1.1"
 
 lazy val root = (project in file("."))
   .settings(
     inThisBuild(
       List(
-        name := "zio-quickstart",
-        organization := "com.example",
+        name := "$name$",
+        organization := "$package$",
         version := "0.0.1",
-        scalaVersion := "3.0.1",
+        scalaVersion := "$dotty_version$",
       )
     ),
     // TODO remove, temporary solution to find zhttp-test
@@ -22,24 +27,39 @@ lazy val root = (project in file("."))
     resolvers += "Sonatype OSS Snapshots s01" at "https://s01.oss.sonatype.org/content/repositories/snapshots",
     name := "zio-quickstart",
     libraryDependencies ++= Seq(
+      "io.getquill" %% "quill-jdbc" % quillVersion excludeAll (
+        ExclusionRule(organization = "org.scala-lang.modules")
+      ),
+      "io.getquill" %% "quill-jdbc-zio" % quillVersion excludeAll (
+        ExclusionRule(organization = "org.scala-lang.modules")
+      ),
+      "io.getquill" %% "quill-jasync-postgres" % quillVersion excludeAll (
+        ExclusionRule(organization = "org.scala-lang.modules")
+      ),
+      "org.postgresql" % "postgresql" % "42.2.23",
       "dev.zio" %% "zio" % zioVersion,
       "dev.zio" %% "zio-streams" % zioVersion,
-      "com.github.ghostdogpr" %% "caliban" % calibanVersion,
-      "com.github.ghostdogpr" %% "caliban-zio-http" % calibanVersion,
       "io.d11" %% "zhttp" % zioHttpVersion,
       "io.d11" %% "zhttp-test" % "1.0.0.0-RC17+37-1c8ceea7-SNAPSHOT" % Test,
-      // TODO add below based on add_zio_kafka=yes condition in default.properties
-      // "dev.zio" %% "zio-kafka"         % zioKafkaVersion,
-      // TODO add here once new realease compatible with scala 3 is pushed
-      // https://github.com/zio/zio-logging/pull/306
-      // https://github.com/zio/zio-config/pull/599
-      // "dev.zio" %% "zio-config" % zioConfigVersion,
-      // "dev.zio" %% "zio-logging" % zioLoggingVersion,
-      // "dev.zio" %% "zio-logging-slf4j" % zioLoggingVersion,
+      "dev.zio" %% "zio-config" % zioConfigVersion,
+      "dev.zio" %% "zio-config-typesafe" % zioConfigVersion,
+      "dev.zio" %% "zio-logging" % zioLoggingVersion,
+      "dev.zio" %% "zio-logging-slf4j" % zioLoggingVersion,
+      "ch.qos.logback" % "logback-classic" % logbackVersion,
+      $if(add_metrics.truthy)$
+      "dev.zio" %% "zio-zmx" % zioZMXVersion,
+      $endif$
       "dev.zio" %% "zio-json" % zioJsonVersion,
+      "com.github.ghostdogpr" %% "caliban" % calibanVersion,
+      "com.github.ghostdogpr" %% "caliban-zio-http" % calibanVersion,
       "dev.zio" %% "zio-test" % zioVersion % Test,
       "dev.zio" %% "zio-test-sbt" % zioVersion % Test,
       "dev.zio" %% "zio-test-junit" % zioVersion % Test,
+      "com.dimafeng"      %% "testcontainers-scala-postgresql" % testcontainersScalaVersion % Test,
+      "org.testcontainers" % "testcontainers"                  % testcontainersVersion      % Test,
+      "org.testcontainers" % "database-commons"                % testcontainersVersion      % Test,
+      "org.testcontainers" % "postgresql"                      % testcontainersVersion      % Test,
+      "org.testcontainers" % "jdbc"                            % testcontainersVersion      % Test,
       "dev.zio" %% "zio-test-magnolia" % zioVersion % Test,
     ),
     testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework")),

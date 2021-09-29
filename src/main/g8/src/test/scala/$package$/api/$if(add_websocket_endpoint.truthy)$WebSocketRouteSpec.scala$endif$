@@ -21,7 +21,7 @@ import $package$.domain._
 
 object WebSocketRouteSpec extends DefaultRunnableSpec:
   private val env = EventLoopGroup.auto() ++ ChannelFactory.auto ++ ServerChannelFactory.auto
-  val repoLayer = (Console.live ++ Random.live) >>> ItemRepositoryLive.layer
+  val repoLayer = (Console.live ++ Random.live) >>> InMemoryItemRepository.layer
   val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
   val businessLayer = (repoLayer ++ subscriberLayer) >>> ItemServiceLive.layer
   val socketOpen = SocketApp.open(Socket.succeed(WebSocketFrame.text("ws openned!")))

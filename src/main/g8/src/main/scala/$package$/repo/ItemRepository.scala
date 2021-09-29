@@ -13,8 +13,6 @@ trait ItemRepository:
 
   def getById(id: ItemId): IO[RepositoryError, Option[Item]]
 
-  def getByIds(ids: Set[ItemId]): IO[RepositoryError, List[Item]]
-
   def update(id: ItemId, item: Item): IO[RepositoryError, Unit]
 
 object ItemRepository:
@@ -25,7 +23,5 @@ object ItemRepository:
   def getAll(): ZIO[Has[ItemRepository], RepositoryError, List[Item]] = ZIO.serviceWith[ItemRepository](_.getAll())
 
   def getById(id: ItemId): ZIO[Has[ItemRepository], RepositoryError, Option[Item]] = ZIO.serviceWith[ItemRepository](_.getById(id))
-
-  def getByIds(ids: Set[ItemId]): ZIO[Has[ItemRepository], RepositoryError, List[Item]] = ZIO.serviceWith[ItemRepository](_.getByIds(ids))
 
   def update(id: ItemId, item: Item): ZIO[Has[ItemRepository], RepositoryError, Unit] = ZIO.serviceWith[ItemRepository](_.update(id, item))

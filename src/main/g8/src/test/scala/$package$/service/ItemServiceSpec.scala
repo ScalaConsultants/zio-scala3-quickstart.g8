@@ -51,3 +51,35 @@ object ItemServiceSpec extends DefaultRunnableSpec:
       }.provideCustomLayer(updateSuccesfullMock $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> ItemServiceLive.layer),
     ),
   )
+
+  def testLayer: ULayer[Has[ItemService]] = 
+    (for {
+      ref <- Ref.make(Map.empty[String, String])
+    } yield (new ItemService {
+
+      def addItem(description: String): IO[DomainError, ItemId] =
+        for {
+          id <- ZIO.succeed(description.hashCode.abs.toLong)
+          _ <- ref.update(m => m + (id.toString -> description))
+        } yield (ItemId(id))
+
+      def deleteItem(id: String): IO[DomainError, Unit] =
+          ref.update(map => map.removed(id))
+
+      def deletedEvents(): zio.stream.Stream[Nothing, ItemId] = zio.stream.ZStream.fromEffect(ZIO.succeed(ItemId(1L)))
+
+      def getAllItems(): IO[DomainError, List[Item]] =
+         ref.get.map(m => m.view.map{
+           case (key, value) => Item(ItemId(key.toLong), value)
+         }.toList)
+
+      def getItemById(id: String): IO[DomainError, Option[Item]] =
+        for
+          map <- ref.get
+          item  <- ZIO.fromOption(map.get(id)).mapError(_ => DomainError.BusinessError(message = "not found"))
+                      .map(des => Item(ItemId(id.toLong), des))
+        yield (Some(item))
+
+      def updateItem(id: String, description: String): IO[DomainError, Unit] =
+        ref.update(map => map.updated(id, description))
+    })).toLayer
