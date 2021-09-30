@@ -83,7 +83,6 @@ object GraphqlApiSpec extends DefaultRunnableSpec:
         itemIds <- stream
           .map(_.toString.fromJson[ItemId])
           .right
-          .tap(z => ZIO.debug(z.value))
           .take(3)
           .runCollect
           .map(_.toList)
