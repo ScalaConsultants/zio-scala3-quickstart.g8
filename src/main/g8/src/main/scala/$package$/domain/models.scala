@@ -13,5 +13,3 @@ enum DomainError(val msg: String) extends Throwable:
   case BusinessError(message: String) extends DomainError(message)
   $endif$
   case ConfigError(e: Exception) extends DomainError(e.getMessage)
-
-final case class HeathCheckStatus(up: Boolean, msg: String)

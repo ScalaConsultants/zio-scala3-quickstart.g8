@@ -21,10 +21,12 @@ import zio.zmx._
 import zio.zmx.diagnostics._
 $endif$
 import zio.config._
+$if(add_http_endpoints_and_database_repositories.truthy)$
 import zio.clock.Clock
 import io.getquill.context.ZioJdbc.QDataSource
 import zio.blocking.Blocking
 import io.getquill.context.ZioJdbc.QConnection
+$endif$
 import zio.logging._
 import $package$.config.configuration.ServerConfig
 $if(add_http_endpoints_and_database_repositories.truthy)$
