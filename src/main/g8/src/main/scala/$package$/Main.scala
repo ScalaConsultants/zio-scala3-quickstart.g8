@@ -7,6 +7,7 @@ import zhttp.http._
 import zhttp.service._
 import zhttp.service.server.ServerChannelFactory
 import zio._
+import zio.stream._
 import zio.console._
 import zio.random._
 import zio.clock._
@@ -66,8 +67,8 @@ object Main extends zio.App:
     getConfig[ServerConfig]
       .flatMap(config =>
         for {
-          interpreter <- GraphqlApi.api.interpreter
-          _ <- setupServer(config.port, interpreter)
+          $if(add_graphql.truthy)$interpreter <- GraphqlApi.api.interpreter $endif$
+          _ <- setupServer(config.port$if(add_graphql.truthy)$, interpreter$endif$)
             .make
             .use(_ => log.info(s"Server started on port \${config.port}") *> ZIO.never)
         } yield ()
@@ -79,9 +80,12 @@ object Main extends zio.App:
       )
       .exitCode
 
-  def setupServer(port: Int, interpreter: GraphQLInterpreter[Console with Clock with Has[ItemService], CalibanError]) =
+  def setupServer(
+      port: Int$if(add_graphql.truthy)$, 
+      interpreter: GraphQLInterpreter[Console with Clock with Has[ItemService], CalibanError]$endif$
+    ) =
     Server.port(port) ++
       Server.app(
-        $if(add_metrics.truthy)$MetricsAndDiagnostics.exposeEndpoints +++$endif$ HttpRoutes.app $if(add_websocket_endpoint.truthy)$ +++ WebSocketRoute.socketImpl $endif$  +++ GraphqlRoute
-          .route(interpreter)
+        $if(add_metrics.truthy)$MetricsAndDiagnostics.exposeEndpoints +++$endif$ HttpRoutes.app $if(add_websocket_endpoint.truthy)$ +++ WebSocketRoute.socketImpl $endif$  $if(add_graphql.truthy)$+++ GraphqlRoute
+          .route(interpreter) $endif$
       )

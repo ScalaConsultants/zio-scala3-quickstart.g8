@@ -2,7 +2,7 @@
 
 ## zio-quickstart.g8
 
-A [Giter8][g8] template for Scala 3 based ZIO powered application with zio-core, zio-test, zio-streams, zio-http, zio-config, zio-logging, protoquill etc.
+A [Giter8][g8] template for Scala 3 based ZIO powered application with ZIO and zio-http, protoquill, caliban, zio-config, zi-zmx, zio-logging etc.
 
 ### Setting up the project
 
