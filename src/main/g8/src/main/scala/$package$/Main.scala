@@ -28,6 +28,9 @@ import $package$.config.configuration.ServerConfig
 import $package$.service._
 import $package$.repo._
 import $package$.api._
+$if(add_graphql.truthy)$
+import $package$.api.graphql._
+$endif$
 $if(add_metrics.truthy)$
 import $package$.api.metricsdiagnostics._
 $endif$

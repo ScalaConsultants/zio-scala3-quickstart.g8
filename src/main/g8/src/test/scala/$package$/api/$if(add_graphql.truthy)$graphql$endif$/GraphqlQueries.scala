@@ -14,7 +14,7 @@ object Queries:
 
   def getById(id: String): String = s"""
       |query{
-      |  getItem(itemId:"$id"){
+      |  getItem(itemId:"\$id"){
       |    id{
       |      value
       |    }
@@ -26,7 +26,7 @@ object Queries:
 object Mutations:
   def save(desc: String) = s"""
       |mutation {
-      |  addItem(description: "$desc"){
+      |  addItem(description: "\$desc"){
       |    value
       |  }
       |}
@@ -34,13 +34,13 @@ object Mutations:
 
   def update(id: String, desc: String) = s"""
       |mutation{
-      |  updateItem(itemId: "$id", description: "$desc")
+      |  updateItem(itemId: "\$id", description: "\$desc")
       |}
       |""".stripMargin
 
   def delete(id: String) = s"""
       |mutation{
-      |  deleteItem(itemId: "$id")
+      |  deleteItem(itemId: "\$id")
       |}
       |""".stripMargin
 
