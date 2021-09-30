@@ -1,8 +1,10 @@
 package $package$
 
+$if(add_graphql.truthy)$
 import caliban._
 import caliban.CalibanError.ValidationError
 import caliban.{ CalibanError, GraphQLInterpreter }
+$endif$
 import zhttp.http._
 import zhttp.service._
 import zhttp.service.server.ServerChannelFactory
