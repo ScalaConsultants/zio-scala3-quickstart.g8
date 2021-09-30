@@ -28,9 +28,6 @@ object MetricsAndDiagnostics:
                 
         resp <- ZIO.service[ZMXClient].flatMap(config => config.sendCommand(Chunk(cmd)))
       yield Response.text(resp)
-
-    case Method.GET -> Root / "health" =>
-        ZIO.succeed(Response.status(Status.OK))
   }
 
   val diagnosticsLayer: ZLayer[Clock & Console & Has[DiagnosticsServerConfig], Exception, Has[Diagnostics]] = 
