@@ -1,4 +1,4 @@
-package $package$.api.metricsdiagnostics
+package $package$.api.diagnostics
 
 import zhttp.http._
 import zio._

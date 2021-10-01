@@ -38,7 +38,7 @@ $if(add_graphql.truthy)$
 import $package$.api.graphql._
 $endif$
 $if(add_metrics.truthy)$
-import $package$.api.metricsdiagnostics._
+import $package$.api.diagnostics._
 $endif$
 import $package$.config.configuration._
 import $package$.healthcheck._
@@ -58,6 +58,8 @@ object Main extends zio.App:
   private val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
   $endif$
   private val businessLayer = repoLayer $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> ItemServiceLive.layer
+  $endif$
+  
   $if(add_metrics.truthy)$
   private val diagnosticsConfigLayer = clockConsole ++ DiagnosticsServerConfig.layer
   private val zmxClient =
@@ -65,9 +67,9 @@ object Main extends zio.App:
   private val diagnosticsLayer =
     diagnosticsConfigLayer >>> MetricsAndDiagnostics.diagnosticsLayer
   $endif$
-  private val applicatonLayer =
-    businessLayer $if(add_metrics.truthy)$++ PrometheusClient.live ++ diagnosticsLayer ++ zmxClient $endif$
-  $endif$
+
+  private val applicatonLayer = loggingEnv $if(add_http_endpoints_and_database_repositories.truthy)$++ businessLayer$endif$
+   $if(add_metrics.truthy)$++ PrometheusClient.live ++ diagnosticsLayer ++ zmxClient$endif$
 
   def run(args: List[String]): URIO[ZEnv, ExitCode] =
     val nThreads: Int = args.headOption.flatMap(x => Try(x.toInt).toOption).getOrElse(0)
@@ -88,7 +90,7 @@ object Main extends zio.App:
       .provideLayer(
         $if(add_http_endpoints_and_database_repositories.truthy)$applicatonLayer ++$endif$ ZEnv.live ++ ServerConfig.layer ++ ServerChannelFactory.auto ++ EventLoopGroup.auto(
           nThreads
-        ) ++ loggingEnv
+        ) ++ applicatonLayer
       )
       .exitCode
 
