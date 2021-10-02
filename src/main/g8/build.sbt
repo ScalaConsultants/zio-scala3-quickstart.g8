@@ -2,7 +2,7 @@ val zioVersion = "1.0.12"
 val zioHttpVersion = "1.0.0.0-RC17"
 val zioJsonVersion = "0.2.0-M1"
 $if(add_metrics.truthy)$
-val zioZMXVersion = "0.0.8"
+val zioZMXVersion = "0.0.9"
 $endif$
 val zioLoggingVersion = "0.5.12"
 val logbackVersion = "1.2.6"
