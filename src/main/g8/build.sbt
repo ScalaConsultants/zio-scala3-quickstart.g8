@@ -10,6 +10,9 @@ val testcontainersVersion      = "1.16.0"
 val testcontainersScalaVersion = "0.39.8"
 val quillVersion = "3.7.2.Beta1.4"
 val zioConfigVersion = "1.0.10"
+$if(add_graphql.truthy)$
+val calibanVersion = "1.1.1"
+$endif$
 
 lazy val root = (project in file("."))
   .settings(
@@ -49,6 +52,10 @@ lazy val root = (project in file("."))
       "dev.zio" %% "zio-zmx" % zioZMXVersion,
       $endif$
       "dev.zio" %% "zio-json" % zioJsonVersion,
+      $if(add_graphql.truthy)$
+      "com.github.ghostdogpr" %% "caliban" % calibanVersion,
+      "com.github.ghostdogpr" %% "caliban-zio-http" % calibanVersion,
+      $endif$
       "dev.zio" %% "zio-test" % zioVersion % Test,
       "dev.zio" %% "zio-test-sbt" % zioVersion % Test,
       "dev.zio" %% "zio-test-junit" % zioVersion % Test,

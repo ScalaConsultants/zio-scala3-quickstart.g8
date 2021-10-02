@@ -1,11 +1,19 @@
 package $package$
 
+$if(add_graphql.truthy)$
+import caliban._
+import caliban.CalibanError.ValidationError
+import caliban.{ CalibanError, GraphQLInterpreter }
+$endif$
 import zhttp.http._
 import zhttp.service._
 import zhttp.service.server.ServerChannelFactory
 import zio._
+import zio.stream._
 import zio.console._
 import zio.random._
+import zio.clock._
+import zio.blocking._
 import scala.util.Try
 $if(add_metrics.truthy)$
 import zio.zmx.prometheus.PrometheusClient
@@ -22,6 +30,9 @@ import $package$.config.configuration.ServerConfig
 import $package$.service._
 import $package$.repo._
 import $package$.api._
+$if(add_graphql.truthy)$
+import $package$.api.graphql._
+$endif$
 $if(add_metrics.truthy)$
 import $package$.api.metricsdiagnostics._
 $endif$
@@ -34,7 +45,7 @@ object Main extends zio.App:
     logLevel = LogLevel.Info,
     format = LogFormat.ColoredLogFormat(),
   ) >>> Logging.withRootLoggerName("$name$")
-  private val connection = 
+  private val connection =
     Blocking.live >>> (QDataSource.fromPrefix("testPostgresDB") >>> QDataSource.toConnection)
   private val repoLayer = (loggingEnv ++ connection) >>> ItemRepositoryLive.layer
   $if(add_websocket_endpoint.truthy)$
@@ -60,9 +71,12 @@ object Main extends zio.App:
 
     getConfig[ServerConfig]
       .flatMap(config =>
-        setupServer(config.port)
-          .make
-          .use(_ => log.info(s"Server started on port \${config.port}") *> ZIO.never)
+        for {
+          $if(add_graphql.truthy)$interpreter <- GraphqlApi.api.interpreter $endif$
+          _ <- setupServer(config.port$if(add_graphql.truthy)$, interpreter$endif$)
+            .make
+            .use(_ => log.info(s"Server started on port \${config.port}") *> ZIO.never)
+        } yield ()
       )
       .provideLayer(
         applicatonLayer ++ ZEnv.live ++ ServerConfig.layer ++ EventLoopGroup.auto(
@@ -71,8 +85,12 @@ object Main extends zio.App:
       )
       .exitCode
 
-  def setupServer(port: Int) =
+  def setupServer(
+      port: Int$if(add_graphql.truthy)$, 
+      interpreter: GraphQLInterpreter[Console with Clock with Has[ItemService], CalibanError]$endif$
+    ) =
     Server.port(port) ++
       Server.app(
-        $if(add_metrics.truthy)$MetricsAndDiagnostics.exposeEndpoints +++$endif$ HttpRoutes.app $if(add_websocket_endpoint.truthy)$ +++ WebSocketRoute.socketImpl $endif$
+        $if(add_metrics.truthy)$MetricsAndDiagnostics.exposeEndpoints +++$endif$ HttpRoutes.app $if(add_websocket_endpoint.truthy)$ +++ WebSocketRoute.socketImpl $endif$  $if(add_graphql.truthy)$+++ GraphqlRoute
+          .route(interpreter) $endif$
       )
