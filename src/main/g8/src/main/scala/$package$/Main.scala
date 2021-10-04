@@ -54,10 +54,10 @@ object Main extends zio.App:
   private val connection =
     Blocking.live >>> (QDataSource.fromPrefix("postgres-db") >>> QDataSource.toConnection)
   private val repoLayer = (loggingEnv ++ connection) >>> ItemRepositoryLive.layer
-  $if(add_websocket_endpoint.truthy||add_graphql.truthy)$
+  $if(add_websocket_endpoint.truthy)$
   private val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
   $endif$
-  private val businessLayer = repoLayer $if(add_websocket_endpoint.truthy||add_graphql.truthy)$ ++ subscriberLayer $endif$ >>> ItemServiceLive.layer
+  private val businessLayer = repoLayer $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> ItemServiceLive.layer
   $endif$
   
   $if(add_metrics.truthy)$

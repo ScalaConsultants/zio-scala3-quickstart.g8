@@ -6,7 +6,7 @@ import $package$.domain._
 import $package$.domain.DomainError.BusinessError
 import $package$.repo._
 
-final class ItemServiceLive(repo: ItemRepository $if(add_websocket_endpoint.truthy||add_graphql.truthy)$, subscriber: SubscriberService $endif$) extends ItemService:
+final class ItemServiceLive(repo: ItemRepository $if(add_websocket_endpoint.truthy)$, subscriber: SubscriberService $endif$) extends ItemService:
   def addItem(description: String): IO[DomainError, ItemId] =
     repo.add(description)
 
@@ -14,10 +14,10 @@ final class ItemServiceLive(repo: ItemRepository $if(add_websocket_endpoint.trut
     for
       itemId <- formatId(id).map(ItemId(_))
       _ <- repo.delete(itemId)
-      $if(add_websocket_endpoint.truthy||add_graphql.truthy)$ _ <- subscriber.publishDeleteEvents(itemId) $endif$
+      $if(add_websocket_endpoint.truthy)$ _ <- subscriber.publishDeleteEvents(itemId) $endif$
     yield ()
 
-  $if(add_websocket_endpoint.truthy||add_graphql.truthy)$
+  $if(add_websocket_endpoint.truthy)$
   def deletedEvents(): Stream[Nothing, ItemId] =
     subscriber.showDeleteEvents
   $endif$
@@ -44,5 +44,5 @@ final class ItemServiceLive(repo: ItemRepository $if(add_websocket_endpoint.trut
     ZIO.fromOption(id.toLongOption).mapError(_ => BusinessError(s"Id \$id is in incorrect form."))
 
 object ItemServiceLive:
-  val layer: URLayer[Has[ItemRepository] $if(add_websocket_endpoint.truthy||add_graphql.truthy)$ with Has[SubscriberService] $endif$, Has[ItemService]] =
-    (ItemServiceLive(_$if(add_websocket_endpoint.truthy||add_graphql.truthy)$, _ $endif$)).toLayer
+  val layer: URLayer[Has[ItemRepository] $if(add_websocket_endpoint.truthy)$ with Has[SubscriberService] $endif$, Has[ItemService]] =
+    (ItemServiceLive(_$if(add_websocket_endpoint.truthy)$, _ $endif$)).toLayer

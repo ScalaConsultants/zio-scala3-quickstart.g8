@@ -1,7 +1,7 @@
 package $package$.service
 
 import zio._
-$if(add_websocket_endpoint.truthy||add_graphql.truthy)$
+$if(add_websocket_endpoint.truthy)$
 import zio.stream._
 $endif$
 import $package$.domain._
@@ -11,7 +11,7 @@ trait ItemService:
 
   def deleteItem(id: String): IO[DomainError, Unit]
 
-  $if(add_websocket_endpoint.truthy||add_graphql.truthy)$
+  $if(add_websocket_endpoint.truthy)$
   def deletedEvents(): Stream[Nothing, ItemId]
   $endif$
 
@@ -28,7 +28,7 @@ object ItemService:
   def deleteItem(id: String): ZIO[Has[ItemService], DomainError, Unit] =
     ZIO.serviceWith[ItemService](_.deleteItem(id))
 
-  $if(add_websocket_endpoint.truthy||add_graphql.truthy)$
+  $if(add_websocket_endpoint.truthy)$
   def deletedEvents(): ZStream[Has[ItemService], Nothing, ItemId] =
     ZStream.accessStream(_.get.deletedEvents())
   $endif$
