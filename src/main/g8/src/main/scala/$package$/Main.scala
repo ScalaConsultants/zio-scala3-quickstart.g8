@@ -21,7 +21,7 @@ import zio.zmx._
 import zio.zmx.diagnostics._
 $endif$
 import zio.config._
-$if(add_http_endpoints_and_database_repositories.truthy)$
+$if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$
 import zio.clock.Clock
 import io.getquill.context.ZioJdbc.QDataSource
 import zio.blocking.Blocking
@@ -29,7 +29,7 @@ import io.getquill.context.ZioJdbc.QConnection
 $endif$
 import zio.logging._
 import $package$.config.configuration.ServerConfig
-$if(add_http_endpoints_and_database_repositories.truthy)$
+$if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$
 import $package$.service._
 import $package$.repo._
 import $package$.api._
@@ -50,14 +50,14 @@ object Main extends zio.App:
     logLevel = LogLevel.Info,
     format = LogFormat.ColoredLogFormat(),
   ) >>> Logging.withRootLoggerName("$name$")
-  $if(add_http_endpoints_and_database_repositories.truthy)$
+  $if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$
   private val connection =
     Blocking.live >>> (QDataSource.fromPrefix("postgres-db") >>> QDataSource.toConnection)
   private val repoLayer = (loggingEnv ++ connection) >>> ItemRepositoryLive.layer
-  $if(add_websocket_endpoint.truthy)$
+  $if(add_websocket_endpoint.truthy||add_graphql.truthy)$
   private val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
   $endif$
-  private val businessLayer = repoLayer $if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> ItemServiceLive.layer
+  private val businessLayer = repoLayer $if(add_websocket_endpoint.truthy||add_graphql.truthy)$ ++ subscriberLayer $endif$ >>> ItemServiceLive.layer
   $endif$
   
   $if(add_metrics.truthy)$
@@ -68,7 +68,7 @@ object Main extends zio.App:
     diagnosticsConfigLayer >>> MetricsAndDiagnostics.diagnosticsLayer
   $endif$
 
-  private val applicatonLayer = loggingEnv $if(add_http_endpoints_and_database_repositories.truthy)$++ businessLayer$endif$
+  private val applicatonLayer = loggingEnv $if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$++ businessLayer$endif$
    $if(add_metrics.truthy)$++ PrometheusClient.live ++ diagnosticsLayer ++ zmxClient$endif$
 
   def run(args: List[String]): URIO[ZEnv, ExitCode] =
@@ -88,7 +88,7 @@ object Main extends zio.App:
         } yield ()
       )
       .provideLayer(
-        $if(add_http_endpoints_and_database_repositories.truthy)$applicatonLayer ++$endif$ ZEnv.live ++ ServerConfig.layer ++ ServerChannelFactory.auto ++ EventLoopGroup.auto(
+        $if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$applicatonLayer ++$endif$ ZEnv.live ++ ServerConfig.layer ++ ServerChannelFactory.auto ++ EventLoopGroup.auto(
           nThreads
         ) ++ applicatonLayer
       )
@@ -98,8 +98,11 @@ object Main extends zio.App:
       port: Int$if(add_graphql.truthy)$, 
       interpreter: GraphQLInterpreter[Console with Clock with Has[ItemService], CalibanError]$endif$
     ) =
-    Server.port(port)  ++
+    Server.port(port) ++
       Server.app(
-        $if(add_metrics.truthy)$MetricsAndDiagnostics.exposeEndpoints +++$endif$ $if(add_http_endpoints_and_database_repositories.truthy)$HttpRoutes.app $endif$ $if(add_websocket_endpoint.truthy)$ +++ WebSocketRoute.socketImpl $endif$  $if(add_graphql.truthy)$+++ GraphqlRoute
-          .route(interpreter) ++ $endif$ Healthcheck.expose
+        $if(add_metrics.truthy)$MetricsAndDiagnostics.exposeEndpoints +++$endif$
+        $if(add_http_endpoint.truthy)$HttpRoutes.app +++$endif$
+        $if(add_websocket_endpoint.truthy)$ WebSocketRoute.socketImpl +++$endif$  
+        $if(add_graphql.truthy)$ GraphqlRoute.route(interpreter) +++$endif$ 
+        Healthcheck.expose
       ) 

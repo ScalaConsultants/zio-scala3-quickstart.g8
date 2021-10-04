@@ -15,7 +15,6 @@ import zhttp.socket._
 import $package$.Main
 import $package$.repo._
 import $package$.service._
-import $package$.api.protocol._
 import $package$.util._
 import $package$.domain._
 

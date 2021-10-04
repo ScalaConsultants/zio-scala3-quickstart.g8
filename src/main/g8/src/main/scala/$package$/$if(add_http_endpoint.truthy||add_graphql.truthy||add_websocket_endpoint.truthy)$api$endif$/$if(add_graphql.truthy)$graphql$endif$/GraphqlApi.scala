@@ -39,10 +39,11 @@ object GraphqlApi extends GenericSchema[Has[ItemService]]:
       updateItem: UpdateItemArgs => ZIO[Has[ItemService], DomainError, Unit],
     )
 
+  $if(add_websocket_endpoint.truthy)$
   final private case class Subscriptions(
       @GQLDescription("Stream of deleted items")
       deletedEventsStream: ZStream[Has[ItemService], Nothing, ItemId]
-    )
+    )$endif$
 
   private val queryResolver = Queries(
     ItemService.getAllItems(),
@@ -54,15 +55,15 @@ object GraphqlApi extends GenericSchema[Has[ItemService]]:
     args => ItemService.deleteItem(args.itemId),
     update => ItemService.updateItem(update.itemId, update.description),
   )
-
+  $if(add_websocket_endpoint.truthy)$
   private val subscriptionResolver = Subscriptions(ItemService.deletedEvents())
-
+  $endif$
   val api: GraphQL[Console with Clock with Has[ItemService]] =
     graphQL(
       RootResolver(
         queryResolver,
         mutationResolver,
-        subscriptionResolver,
+        $if(add_websocket_endpoint.truthy)$subscriptionResolver,$endif$
       )
     ) @@
       maxFields(200) @@ // query analyzer that limit query fields

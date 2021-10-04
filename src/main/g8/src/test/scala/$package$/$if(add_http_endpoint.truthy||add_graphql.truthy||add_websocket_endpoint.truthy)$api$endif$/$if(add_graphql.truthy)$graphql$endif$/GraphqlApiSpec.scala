@@ -62,7 +62,7 @@ object GraphqlApiSpec extends DefaultRunnableSpec:
         removed <- ZIO.service[ItemService].flatMap(_.getItemById(id))
       yield assert(exist)(isSome(equalTo(firstItem))) && assert(removed)(isNone)
     },
-    testM("subscribe to stream of all deleted items") {
+    $if(add_websocket_endpoint.truthy)$testM("subscribe to stream of all deleted items") {
       for
         interpreter <- GraphqlApi.api.interpreter
         firstId = firstItem.id.value.toString
@@ -91,7 +91,7 @@ object GraphqlApiSpec extends DefaultRunnableSpec:
       assert(itemIds(1).value.toString)(equalTo(secondId)) &&
       assert(itemIds(2).value.toString)(equalTo(thirdId))
 
-    },
+    }$endif$
   ).provideCustomLayerShared(ItemServiceSpec.testLayer) @@ sequential
 
   final case class ItemWrapper(getItem: Item)

@@ -6,7 +6,7 @@ val zioZMXVersion = "0.0.8"
 $endif$
 val zioLoggingVersion = "0.5.12"
 val logbackVersion = "1.2.6"
-$if(add_http_endpoints_and_database_repositories.truthy)$
+$if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$
 val testcontainersVersion      = "1.16.0"
 val testcontainersScalaVersion = "0.39.8"
 val quillVersion = "3.7.2.Beta1.4"
@@ -31,7 +31,7 @@ lazy val root = (project in file("."))
     resolvers += "Sonatype OSS Snapshots s01" at "https://s01.oss.sonatype.org/content/repositories/snapshots",
     name := "zio-quickstart",
     libraryDependencies ++= Seq(
-      $if(add_http_endpoints_and_database_repositories.truthy)$
+      $if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$
       "io.getquill" %% "quill-jdbc" % quillVersion excludeAll (
         ExclusionRule(organization = "org.scala-lang.modules")
       ),
@@ -63,7 +63,7 @@ lazy val root = (project in file("."))
       "dev.zio" %% "zio-test" % zioVersion % Test,
       "dev.zio" %% "zio-test-sbt" % zioVersion % Test,
       "dev.zio" %% "zio-test-junit" % zioVersion % Test,
-      $if(add_http_endpoints_and_database_repositories.truthy)$
+      $if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$
       "com.dimafeng"      %% "testcontainers-scala-postgresql" % testcontainersScalaVersion % Test,
       "org.testcontainers" % "testcontainers"                  % testcontainersVersion      % Test,
       "org.testcontainers" % "database-commons"                % testcontainersVersion      % Test,
