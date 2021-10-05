@@ -1,7 +1,9 @@
 package $package$.service
 
 import zio._
+$if(add_websocket_endpoint.truthy)$
 import zio.stream._
+$endif$
 import $package$.domain._
 
 trait ItemService:
@@ -28,7 +30,7 @@ object ItemService:
 
   $if(add_websocket_endpoint.truthy)$
   def deletedEvents(): ZStream[Has[ItemService], Nothing, ItemId] =
-  ZStream.accessStream(_.get.deletedEvents())
+    ZStream.accessStream(_.get.deletedEvents())
   $endif$
 
   def getAllItems(): ZIO[Has[ItemService], DomainError, List[Item]] =

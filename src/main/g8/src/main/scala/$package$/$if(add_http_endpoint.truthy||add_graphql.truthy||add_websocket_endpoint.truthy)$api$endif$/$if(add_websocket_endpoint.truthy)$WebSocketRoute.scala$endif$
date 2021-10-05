@@ -1,0 +1,39 @@
+package $package$.api
+
+import zio._
+import zhttp.http._
+import zhttp.socket._
+import zio.stream._
+import zio.console._
+import $package$.service.ItemService._
+import $package$.service.ItemService
+
+object WebSocketRoute:
+  private val open = Socket.succeed(WebSocketFrame.text("ws openned!"))
+  private val decoder = SocketDecoder.allowExtensions
+  private val socket = Socket.collect[WebSocketFrame] {
+    case WebSocketFrame.Text("deleted") =>
+      deletedEvents().map { itemId =>
+        WebSocketFrame.text(s"deleted: \${itemId.value}")
+      }
+    case fr @ WebSocketFrame.Text(_) =>
+      ZStream
+        .fromEffect {
+          getItemById(fr.text).map(
+            _.fold(WebSocketFrame.text("item doesn't exist"))(item =>
+              WebSocketFrame.text(item.toString)
+            )
+          )
+        }
+  }
+
+  private val socketApp =
+    SocketApp.open(open)
+      ++ SocketApp.message(socket)
+      ++ SocketApp.close(_ => putStrLn("Closed!").ignore)
+      ++ SocketApp.error(_ => putStrLn("Error!").ignore)
+      ++ SocketApp.decoder(decoder)
+
+  val socketImpl: HttpApp[Has[ItemService] with Console, Throwable] = HttpApp.collectM {
+    case Method.GET -> Root / "ws" / "items" => Task.effect(socketApp)
+  }

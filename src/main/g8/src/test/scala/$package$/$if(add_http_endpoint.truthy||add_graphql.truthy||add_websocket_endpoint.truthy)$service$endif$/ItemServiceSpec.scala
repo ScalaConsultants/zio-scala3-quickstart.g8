@@ -68,9 +68,9 @@ object ItemServiceSpec extends DefaultRunnableSpec:
 
       def deleteItem(id: String): IO[DomainError, Unit] =
         ref.update(map => map.removed(id)) <* queue.offer(ItemId(id.toLong))
-
+      $if(add_websocket_endpoint.truthy)$
       def deletedEvents(): Stream[Nothing, ItemId] = ZStream.fromQueue(queue)
-
+      $endif$
       def getAllItems(): IO[DomainError, List[Item]] =
         ref
           .get

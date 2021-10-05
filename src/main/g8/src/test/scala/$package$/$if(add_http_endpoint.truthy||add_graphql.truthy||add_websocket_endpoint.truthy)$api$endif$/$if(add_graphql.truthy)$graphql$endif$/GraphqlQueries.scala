@@ -43,11 +43,11 @@ object Mutations:
       |  deleteItem(itemId: "\$id")
       |}
       |""".stripMargin
-
+$if(add_websocket_endpoint.truthy)$
 object Subscriptions:
   val streamDeleted: String = """
       |subscription{
       |  deletedEventsStream {
       |    value
       |  }
-      |}""".stripMargin
+      |}""".stripMargin $endif$

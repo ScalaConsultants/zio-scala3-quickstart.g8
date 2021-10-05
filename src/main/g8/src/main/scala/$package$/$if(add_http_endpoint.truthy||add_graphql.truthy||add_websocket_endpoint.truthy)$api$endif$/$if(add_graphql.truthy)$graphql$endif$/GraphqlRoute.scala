@@ -24,6 +24,6 @@ object GraphqlRoute:
     ): RHttpApp[Console with Blocking with Clock with Has[ItemService]] =
     Http.route {
       case _ -> Root / "api" / "graphql" => ZHttpAdapter.makeHttpService(interpreter)
-      case _ -> Root / "ws" / "graphql"  => ZHttpAdapter.makeWebSocketService(interpreter)
+      $if(add_websocket_endpoint.truthy)$case _ -> Root / "ws" / "graphql"  => ZHttpAdapter.makeWebSocketService(interpreter)$endif$
       case _ -> Root / "graphiql"        => graphiql
     }
