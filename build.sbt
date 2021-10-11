@@ -4,7 +4,7 @@ val zioJsonVersion = "0.2.0-M1"
 val zioZMXVersion = "0.0.9"
 val zioLoggingVersion = "0.5.12"
 val logbackVersion = "1.2.6"
-val testcontainersVersion      = "1.16.0"
+val testcontainersVersion = "1.16.0"
 val testcontainersScalaVersion = "0.39.8"
 val quillVersion = "3.7.2.Beta1.4"
 val zioConfigVersion = "1.0.10"
@@ -31,8 +31,8 @@ lazy val root = (project in file("."))
       "org.postgresql" % "postgresql" % "42.2.24",
       "dev.zio" %% "zio" % zioVersion,
       "dev.zio" %% "zio-streams" % zioVersion,
-      "io.d11"  %% "zhttp" % zioHttpVersion,
-      "io.d11"  %% "zhttp-test" % "1.0.0.0-RC17+37-1c8ceea7-SNAPSHOT" % Test,
+      "io.d11" %% "zhttp" % zioHttpVersion,
+      "io.d11" %% "zhttp-test" % "1.0.0.0-RC17+37-1c8ceea7-SNAPSHOT" % Test,
       "dev.zio" %% "zio-config" % zioConfigVersion,
       "dev.zio" %% "zio-config-typesafe" % zioConfigVersion,
       "dev.zio" %% "zio-logging" % zioLoggingVersion,
@@ -45,11 +45,11 @@ lazy val root = (project in file("."))
       "dev.zio" %% "zio-test" % zioVersion % Test,
       "dev.zio" %% "zio-test-sbt" % zioVersion % Test,
       "dev.zio" %% "zio-test-junit" % zioVersion % Test,
-      "com.dimafeng"      %% "testcontainers-scala-postgresql" % testcontainersScalaVersion % Test,
-      "org.testcontainers" % "testcontainers"                  % testcontainersVersion      % Test,
-      "org.testcontainers" % "database-commons"                % testcontainersVersion      % Test,
-      "org.testcontainers" % "postgresql"                      % testcontainersVersion      % Test,
-      "org.testcontainers" % "jdbc"                            % testcontainersVersion      % Test,
+      "com.dimafeng" %% "testcontainers-scala-postgresql" % testcontainersScalaVersion % Test,
+      "org.testcontainers" % "testcontainers" % testcontainersVersion % Test,
+      "org.testcontainers" % "database-commons" % testcontainersVersion % Test,
+      "org.testcontainers" % "postgresql" % testcontainersVersion % Test,
+      "org.testcontainers" % "jdbc" % testcontainersVersion % Test,
       "dev.zio" %% "zio-test-magnolia" % zioVersion % Test,
     ),
     test in Test := {
