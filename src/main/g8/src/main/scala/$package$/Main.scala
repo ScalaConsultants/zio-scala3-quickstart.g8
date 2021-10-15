@@ -43,7 +43,7 @@ $endif$
 
 import scala.util.Try
 
-object Main extends zio.App:
+object Main extends scala.App:
 
   private val clockConsole = Clock.live ++ Console.live
 
@@ -70,42 +70,7 @@ object Main extends zio.App:
   $endif$
 
   private val applicationLayer = loggingEnv$if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$ ++ businessLayer$endif$
-   $if(add_metrics.truthy)$++ PrometheusClient.live ++ diagnosticsLayer ++ zmxClient$endif$
-
-  def run(args: List[String]): URIO[ZEnv, ExitCode] =
-    val nThreads: Int = args.headOption.flatMap(x => Try(x.toInt).toOption).getOrElse(0)
-
-    $if(add_metrics.truthy)$
-    platform.withSupervisor(ZMXSupervisor)
-    $endif$
-
-    val program = 
-      $if(add_graphql.truthy)$
-      for {
-        config      <- getConfig[ServerConfig]
-        interpreter <- GraphqlApi.api.interpreter
-        _           <- setupServer(config.port, interpreter)
-                         .make
-                         .use(_ => log.info(s"Server started on port \${config.port}") *> ZIO.never)
-      } yield ()
-      $else$
-      for {
-        config <- getConfig[ServerConfig]
-        _      <- setupServer(config.port)
-                    .make
-                    .use(_ => log.info(s"Server started on port \${config.port}") *> ZIO.never)
-      } yield ()
-      $endif$
-
-    program
-      .provideLayer(
-        ZEnv.live ++ 
-        ServerConfig.layer ++ 
-        ServerChannelFactory.auto ++ 
-        EventLoopGroup.auto(nThreads) ++
-        applicationLayer
-      )
-      .exitCode
+    $if(add_metrics.truthy)$++ PrometheusClient.live ++ diagnosticsLayer ++ zmxClient$endif$
 
   $if(add_graphql.truthy)$
   def setupServer(
@@ -123,3 +88,40 @@ object Main extends zio.App:
         $if(add_graphql.truthy)$ GraphqlRoute.route(interpreter) +++$endif$
         Healthcheck.expose
       )
+
+  val program = 
+    $if(add_graphql.truthy)$
+    for {
+      config      <- getConfig[ServerConfig]
+      interpreter <- GraphqlApi.api.interpreter
+      _           <- setupServer(config.port, interpreter)
+                       .make
+                       .use(_ => log.info(s"Server started on port \${config.port}") *> ZIO.never)
+    } yield ()
+    $else$
+    for {
+      config <- getConfig[ServerConfig]
+      _      <- setupServer(config.port)
+                  .make
+                  .use(_ => log.info(s"Server started on port \${config.port}") *> ZIO.never)
+    } yield ()
+    $endif$
+
+  val runtime: Runtime[ZEnv] =
+    $if(add_metrics.truthy)$
+    Runtime.default.mapPlatform(_.withSupervisor(ZMXSupervisor))
+    $else$
+    Runtime.default
+    $endif$
+  
+  runtime.unsafeRun(
+    program
+      .provideLayer(
+        ZEnv.live ++ 
+        ServerConfig.layer ++ 
+        ServerChannelFactory.auto ++ 
+        EventLoopGroup.auto() ++
+        applicationLayer
+      )
+      .exitCode
+  )
