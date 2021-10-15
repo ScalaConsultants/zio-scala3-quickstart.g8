@@ -62,15 +62,14 @@ object Main extends scala.App:
   $endif$
   
   $if(add_metrics.truthy)$
-  private val diagnosticsConfigLayer = clockConsole ++ DiagnosticsServerConfig.layer
-  private val zmxClient =
-    diagnosticsConfigLayer >>> MetricsAndDiagnostics.zmxClientLayer
   private val diagnosticsLayer =
-    diagnosticsConfigLayer >>> MetricsAndDiagnostics.diagnosticsLayer
+    clockConsole ++ 
+    DiagnosticsServerConfig.layer >>> 
+    MetricsAndDiagnostics.diagnosticsLayer
   $endif$
 
   private val applicationLayer = loggingEnv$if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$ ++ businessLayer$endif$
-    $if(add_metrics.truthy)$++ PrometheusClient.live ++ diagnosticsLayer ++ zmxClient$endif$
+    $if(add_metrics.truthy)$++ PrometheusClient.live ++ diagnosticsLayer$endif$
 
   $if(add_graphql.truthy)$
   def setupServer(
@@ -82,7 +81,7 @@ object Main extends scala.App:
   $endif$
     Server.port(port) ++
       Server.app(
-        $if(add_metrics.truthy)$MetricsAndDiagnostics.exposeEndpoints +++$endif$
+        $if(add_metrics.truthy)$MetricsAndDiagnostics.exposeMetrics +++$endif$
         $if(add_http_endpoint.truthy)$HttpRoutes.app +++$endif$
         $if(add_websocket_endpoint.truthy)$ WebSocketRoute.socketImpl +++$endif$
         $if(add_graphql.truthy)$ GraphqlRoute.route(interpreter) +++$endif$
