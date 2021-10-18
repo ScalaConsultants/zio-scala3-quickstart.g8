@@ -28,7 +28,7 @@ lazy val root = (project in file("."))
       "io.getquill" %% "quill-jasync-postgres" % quillVersion excludeAll (
         ExclusionRule(organization = "org.scala-lang.modules")
       ),
-      "org.postgresql" % "postgresql" % "42.2.24",
+      "org.postgresql" % "postgresql" % "42.3.0",
       "dev.zio" %% "zio" % zioVersion,
       "dev.zio" %% "zio-streams" % zioVersion,
       "io.d11" %% "zhttp" % zioHttpVersion,
