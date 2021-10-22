@@ -7,7 +7,7 @@ $endif$
 val zioLoggingVersion = "0.5.12"
 val logbackVersion = "1.2.6"
 $if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$
-val testcontainersVersion      = "1.16.0"
+val testcontainersVersion      = "1.16.2"
 val testcontainersScalaVersion = "0.39.8"
 val quillVersion = "3.7.2.Beta1.4"
 $endif$
