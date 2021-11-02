@@ -8,7 +8,7 @@ val zioLoggingVersion = "0.5.13"
 val logbackVersion = "1.2.6"
 $if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$
 val testcontainersVersion      = "1.16.2"
-val testcontainersScalaVersion = "0.39.10"
+val testcontainersScalaVersion = "0.39.11"
 val quillVersion = "3.7.2.Beta1.4"
 $endif$
 val zioConfigVersion = "1.0.10"
