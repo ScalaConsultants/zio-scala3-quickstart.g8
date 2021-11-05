@@ -13,7 +13,7 @@ val quillVersion = "3.7.2.Beta1.4"
 $endif$
 val zioConfigVersion = "1.0.10"
 $if(add_graphql.truthy)$
-val calibanVersion = "1.2.1"
+val calibanVersion = "1.2.2"
 $endif$
 
 lazy val root = (project in file("."))
