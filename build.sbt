@@ -8,7 +8,7 @@ val testcontainersVersion = "1.16.2"
 val testcontainersScalaVersion = "0.39.11"
 val quillVersion = "3.7.2.Beta1.4"
 val zioConfigVersion = "1.0.10"
-val calibanVersion = "1.2.2"
+val calibanVersion = "1.2.3"
 
 // This build is for this Giter8 template.
 // To test the template run `g8` or `g8Test` from the sbt session.
