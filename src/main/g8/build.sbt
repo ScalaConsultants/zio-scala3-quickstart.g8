@@ -4,7 +4,7 @@ val zioJsonVersion = "0.2.0-M2"
 $if(add_metrics.truthy)$
 val zioZMXVersion = "0.0.11"
 $endif$
-val zioLoggingVersion = "0.5.13"
+val zioLoggingVersion = "0.5.14"
 val logbackVersion = "1.2.6"
 $if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$
 val testcontainersVersion      = "1.16.2"
