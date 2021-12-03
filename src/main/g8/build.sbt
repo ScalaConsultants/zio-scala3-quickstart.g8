@@ -5,15 +5,15 @@ $if(add_metrics.truthy)$
 val zioZMXVersion = "0.0.11"
 $endif$
 val zioLoggingVersion = "0.5.14"
-val logbackVersion = "1.2.6"
+val logbackVersion = "1.2.7"
 $if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$
 val testcontainersVersion      = "1.16.2"
-val testcontainersScalaVersion = "0.39.11"
+val testcontainersScalaVersion = "0.39.12"
 val quillVersion = "3.7.2.Beta1.4"
 $endif$
 val zioConfigVersion = "1.0.10"
 $if(add_graphql.truthy)$
-val calibanVersion = "1.2.2"
+val calibanVersion = "1.2.4"
 $endif$
 
 lazy val root = (project in file("."))
