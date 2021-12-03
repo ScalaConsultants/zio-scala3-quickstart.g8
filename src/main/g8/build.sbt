@@ -1,6 +1,6 @@
 val zioVersion = "1.0.12"
 val zioHttpVersion = "1.0.0.0-RC17"
-val zioJsonVersion = "0.2.0-M2"
+val zioJsonVersion = "0.2.0-M3"
 $if(add_metrics.truthy)$
 val zioZMXVersion = "0.0.11"
 $endif$
