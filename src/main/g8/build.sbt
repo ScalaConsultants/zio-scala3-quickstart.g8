@@ -1,19 +1,19 @@
 val zioVersion = "1.0.12"
 val zioHttpVersion = "1.0.0.0-RC17"
-val zioJsonVersion = "0.2.0-M1"
+val zioJsonVersion = "0.2.0-M3"
 $if(add_metrics.truthy)$
-val zioZMXVersion = "0.0.10"
+val zioZMXVersion = "0.0.11"
 $endif$
-val zioLoggingVersion = "0.5.12"
-val logbackVersion = "1.2.6"
+val zioLoggingVersion = "0.5.14"
+val logbackVersion = "1.2.7"
 $if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$
-val testcontainersVersion      = "1.16.0"
-val testcontainersScalaVersion = "0.39.8"
+val testcontainersVersion      = "1.16.2"
+val testcontainersScalaVersion = "0.39.12"
 val quillVersion = "3.7.2.Beta1.4"
 $endif$
 val zioConfigVersion = "1.0.10"
 $if(add_graphql.truthy)$
-val calibanVersion = "1.2.1"
+val calibanVersion = "1.2.4"
 $endif$
 
 lazy val root = (project in file("."))
@@ -41,7 +41,7 @@ lazy val root = (project in file("."))
       "io.getquill" %% "quill-jasync-postgres" % quillVersion excludeAll (
         ExclusionRule(organization = "org.scala-lang.modules")
       ),
-      "org.postgresql" % "postgresql" % "42.2.24",
+      "org.postgresql" % "postgresql" % "42.3.1",
       $endif$
       "dev.zio" %% "zio" % zioVersion,
       "dev.zio" %% "zio-streams" % zioVersion,

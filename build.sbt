@@ -1,14 +1,14 @@
 val zioVersion = "1.0.12"
 val zioHttpVersion = "1.0.0.0-RC17"
-val zioJsonVersion = "0.2.0-M1"
-val zioZMXVersion = "0.0.10"
-val zioLoggingVersion = "0.5.12"
-val logbackVersion = "1.2.6"
-val testcontainersVersion = "1.16.0"
-val testcontainersScalaVersion = "0.39.8"
+val zioJsonVersion = "0.2.0-M3"
+val zioZMXVersion = "0.0.11"
+val zioLoggingVersion = "0.5.14"
+val logbackVersion = "1.2.7"
+val testcontainersVersion = "1.16.2"
+val testcontainersScalaVersion = "0.39.12"
 val quillVersion = "3.7.2.Beta1.4"
 val zioConfigVersion = "1.0.10"
-val calibanVersion = "1.2.1"
+val calibanVersion = "1.2.4"
 
 // This build is for this Giter8 template.
 // To test the template run `g8` or `g8Test` from the sbt session.
