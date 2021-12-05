@@ -18,40 +18,6 @@ lazy val root = (project in file("."))
   .settings(
     resolvers += "Sonatype OSS Snapshots s01" at "https://s01.oss.sonatype.org/content/repositories/snapshots",
     name := "zio-quickstart",
-    libraryDependencies ++= Seq(
-      "io.getquill" %% "quill-jdbc" % quillVersion excludeAll (
-        ExclusionRule(organization = "org.scala-lang.modules")
-      ),
-      "io.getquill" %% "quill-jdbc-zio" % quillVersion excludeAll (
-        ExclusionRule(organization = "org.scala-lang.modules")
-      ),
-      "io.getquill" %% "quill-jasync-postgres" % quillVersion excludeAll (
-        ExclusionRule(organization = "org.scala-lang.modules")
-      ),
-      "org.postgresql" % "postgresql" % "42.2.24",
-      "dev.zio" %% "zio" % zioVersion,
-      "dev.zio" %% "zio-streams" % zioVersion,
-      "io.d11" %% "zhttp" % zioHttpVersion,
-      "io.d11" %% "zhttp-test" % "1.0.0.0-RC17+37-1c8ceea7-SNAPSHOT" % Test,
-      "dev.zio" %% "zio-config" % zioConfigVersion,
-      "dev.zio" %% "zio-config-typesafe" % zioConfigVersion,
-      "dev.zio" %% "zio-logging" % zioLoggingVersion,
-      "dev.zio" %% "zio-logging-slf4j" % zioLoggingVersion,
-      "ch.qos.logback" % "logback-classic" % logbackVersion,
-      "dev.zio" %% "zio-zmx" % zioZMXVersion,
-      "dev.zio" %% "zio-json" % zioJsonVersion,
-      "com.github.ghostdogpr" %% "caliban" % calibanVersion,
-      "com.github.ghostdogpr" %% "caliban-zio-http" % calibanVersion,
-      "dev.zio" %% "zio-test" % zioVersion % Test,
-      "dev.zio" %% "zio-test-sbt" % zioVersion % Test,
-      "dev.zio" %% "zio-test-junit" % zioVersion % Test,
-      "com.dimafeng" %% "testcontainers-scala-postgresql" % testcontainersScalaVersion % Test,
-      "org.testcontainers" % "testcontainers" % testcontainersVersion % Test,
-      "org.testcontainers" % "database-commons" % testcontainersVersion % Test,
-      "org.testcontainers" % "postgresql" % testcontainersVersion % Test,
-      "org.testcontainers" % "jdbc" % testcontainersVersion % Test,
-      "dev.zio" %% "zio-test-magnolia" % zioVersion % Test,
-    ),
     test in Test := {
       val _ = (g8Test in Test).toTask("").value
     },
