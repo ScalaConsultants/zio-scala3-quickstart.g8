@@ -1,126 +1,44 @@
 package $package$
 
-$if(add_graphql.truthy)$
-import caliban._
-import caliban.CalibanError.ValidationError
-import caliban.{ CalibanError, GraphQLInterpreter }
-$endif$
-$if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$
-import io.getquill.context.ZioJdbc.QDataSource
-import io.getquill.context.ZioJdbc.QConnection
+$if(add_http_endpoint.truthy)$
+import io.getquill.context.ZioJdbc._
 $endif$
 import zhttp.http._
 import zhttp.service._
 import zhttp.service.server.ServerChannelFactory
 import zio._
-import zio.blocking._
-import zio.clock._
 import zio.config._
-import zio.console._
-import zio.logging._
-import zio.random._
 import zio.stream._
-$if(add_metrics.truthy)$
-import zio.zmx.prometheus.PrometheusClient
-import zio.zmx._
-import zio.zmx.diagnostics._
-$endif$
-$if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$
+$if(add_http_endpoint.truthy)$
 import $package$.api._
 $endif$
-$if(add_metrics.truthy)$
-import $package$.api.diagnostics._
-$endif$
-$if(add_graphql.truthy)$
-import $package$.api.graphql._
-$endif$
-import $package$.config.configuration._
+import $package$.config.Configuration._
 import $package$.healthcheck._
-$if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$
+$if(add_http_endpoint.truthy)$
 import $package$.repo._
 import $package$.service._
 $endif$
 
-import scala.util.Try
 
-object Main extends scala.App:
+object Main extends ZIOAppDefault:
 
-  private val clockConsole = Clock.live ++ Console.live
+  $if(add_http_endpoint.truthy)$
+  private val dataSourceLayer = DataSourceLayer.fromPrefix("postgres-db")
 
-  private val loggingEnv = 
-    clockConsole >>> 
-    Logging.console(LogLevel.Info, LogFormat.ColoredLogFormat()) >>> 
-    Logging.withRootLoggerName("$name$")
-  $if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$
-  private val connection =
-    Blocking.live >>> (QDataSource.fromPrefix("postgres-db") >>> QDataSource.toConnection)
-  private val repoLayer = (loggingEnv ++ connection) >>> ItemRepositoryLive.layer
-  $if(add_websocket_endpoint.truthy)$
-  private val subscriberLayer = ZLayer.fromEffect(Ref.make(List.empty)) >>> SubscriberServiceLive.layer
-  $endif$
-  private val businessLayer = repoLayer$if(add_websocket_endpoint.truthy)$ ++ subscriberLayer $endif$ >>> ItemServiceLive.layer
+  private val repoLayer = ItemRepositoryLive.layer
+
+  private val serviceLayer = ItemServiceLive.layer
   $endif$
   
-  $if(add_metrics.truthy)$
-  private val diagnosticsLayer =
-    clockConsole ++ 
-    DiagnosticsServerConfig.layer >>> 
-    MetricsAndDiagnostics.diagnosticsLayer
-  $endif$
-
-  private val applicationLayer = loggingEnv$if(add_http_endpoint.truthy||add_graphql.truthy||add_websocket_endpoint.truthy)$ ++ businessLayer$endif$
-    $if(add_metrics.truthy)$++ PrometheusClient.live ++ diagnosticsLayer$endif$
-
-  $if(add_graphql.truthy)$
-  def setupServer(
-      port: Int, 
-      interpreter: GraphQLInterpreter[Console with Clock with Has[ItemService], CalibanError]
-    ) =
-  $else$
-  def setupServer(port: Int) =
-  $endif$
-    Server.port(port) ++
-      Server.app(
-        $if(add_metrics.truthy)$MetricsAndDiagnostics.exposeMetrics +++$endif$
-        $if(add_http_endpoint.truthy)$HttpRoutes.app +++$endif$
-        $if(add_websocket_endpoint.truthy)$ WebSocketRoute.socketImpl +++$endif$
-        $if(add_graphql.truthy)$ GraphqlRoute.route(interpreter) +++$endif$
-        Healthcheck.expose
-      )
+  val routes =
+    $if(add_http_endpoint.truthy)$HttpRoutes.app ++$endif$
+    Healthcheck.routes
 
   val program = 
-    $if(add_graphql.truthy)$
-    for {
-      config      <- getConfig[ServerConfig]
-      interpreter <- GraphqlApi.api.interpreter
-      _           <- setupServer(config.port, interpreter)
-                       .make
-                       .use(_ => log.info(s"Server started on port \${config.port}") *> ZIO.never)
-    } yield ()
-    $else$
-    for {
+    for
       config <- getConfig[ServerConfig]
-      _      <- setupServer(config.port)
-                  .make
-                  .use(_ => log.info(s"Server started on port \${config.port}") *> ZIO.never)
-    } yield ()
-    $endif$
+      _      <- Server.start(config.port, routes)
+    yield ()
 
-  val runtime: Runtime[ZEnv] =
-    $if(add_metrics.truthy)$
-    Runtime.default.mapPlatform(_.withSupervisor(ZMXSupervisor))
-    $else$
-    Runtime.default
-    $endif$
-  
-  runtime.unsafeRun(
-    program
-      .provideLayer(
-        ZEnv.live ++ 
-        ServerConfig.layer ++ 
-        ServerChannelFactory.auto ++ 
-        EventLoopGroup.auto() ++
-        applicationLayer
-      )
-      .exitCode
-  )
+  override val run = 
+    program.provide(ServerConfig.layer$if(add_http_endpoint.truthy)$, serviceLayer, repoLayer, dataSourceLayer$endif$)
