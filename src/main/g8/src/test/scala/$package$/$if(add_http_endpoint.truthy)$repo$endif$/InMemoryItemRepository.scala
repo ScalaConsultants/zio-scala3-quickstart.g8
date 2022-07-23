@@ -1,13 +1,10 @@
 package $package$.repo
 
-import zio.random._
-import zio.console._
 import zio._
 import $package$.domain._
-import $package$.domain.DomainError.RepositoryError
 
 final class InMemoryItemRepository(
-    random: Random.Service,
+    random: Random,
     dataRef: Ref[Map[ItemId, Item]],
   ) extends ItemRepository:
 
@@ -36,12 +33,12 @@ final class InMemoryItemRepository(
       values <- dataRef.get
     } yield (values.filter(id => ids.contains(id._1)).view.values.toList)
 
-  def update(id: ItemId, item: Item): IO[RepositoryError, Unit] =
-    dataRef.update(map => map + (id -> item.copy(id = id)))
+  def update(item: Item): IO[RepositoryError, Unit] =
+    dataRef.update(map => map + (item.id -> item))
 
 object InMemoryItemRepository:
-  val layer: ZLayer[Has[Random.Service], Nothing, Has[ItemRepository]] =
-    (for {
-      random  <- ZIO.service[Random.Service]
+  val layer: ZLayer[Random, Nothing, ItemRepository] =
+    ZLayer(for {
+      random  <- ZIO.service[Random]
       dataRef <- Ref.make(Map.empty[ItemId, Item])
-    } yield (InMemoryItemRepository(random, dataRef))).toLayer
+    } yield (InMemoryItemRepository(random, dataRef)))

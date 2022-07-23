@@ -3,16 +3,14 @@ package $package$.repo.postgresql
 import com.dimafeng.testcontainers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 import zio._
-import zio.duration._
-import zio.blocking.{ effectBlocking, Blocking }
 
 object PostgresContainer:
 
   def make(
       imageName: String = "postgres:alpine"
     ) =
-    ZManaged.make {
-      effectBlocking {
+    ZIO.acquireRelease {
+      ZIO.attempt {
         val c = new PostgreSQLContainer(
           dockerImageNameOverride = Option(imageName).map(DockerImageName.parse)
         ).configure { a =>
@@ -23,5 +21,5 @@ object PostgresContainer:
         c
       }
     } { container =>
-      effectBlocking(container.stop()).orDie
-    }.toLayer
+      ZIO.attempt(container.stop()).orDie
+    }
