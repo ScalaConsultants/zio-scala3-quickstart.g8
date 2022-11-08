@@ -30,7 +30,7 @@ object ItemServiceSpec extends ZIOSpecDefault:
   def spec = suite("item service test")(
     test("get item id accept long") {
       for
-        found <- assertZIO(getItemById(ItemId(123)))(isSome(equalTo(exampleItem)))
+        found  <- assertZIO(getItemById(ItemId(123)))(isSome(equalTo(exampleItem)))
         mising <- assertZIO(getItemById(ItemId(124)))(isNone)
       yield found && mising
     }.provideCustomLayer(getItemMock >>> ItemServiceLive.layer),
@@ -48,15 +48,15 @@ object ItemServiceSpec extends ZIOSpecDefault:
 
   def testLayer: ULayer[ItemService] =
     ZLayer(for {
-      ref <- Ref.make(Map.empty[String, String])
+      ref   <- Ref.make(Map.empty[String, String])
       queue <- Queue.bounded[ItemId](10)
-    } yield (new ItemService {
+    } yield new ItemService {
 
       def addItem(description: String): UIO[ItemId] =
         for {
           id <- ZIO.succeed(description.hashCode.abs.toLong)
-          _ <- ref.update(m => m + (id.toString -> description))
-        } yield (ItemId(id))
+          _  <- ref.update(m => m + (id.toString -> description))
+        } yield ItemId(id)
 
       def deleteItem(id: ItemId): UIO[Unit] =
         ref.update(map => map.removed(id.value.toString())) <* queue.offer(id)
@@ -74,12 +74,12 @@ object ItemServiceSpec extends ZIOSpecDefault:
 
       def getItemById(id: ItemId): UIO[Option[Item]] =
         for
-          map <- ref.get
+          map  <- ref.get
           item <- ZIO
-            .succeed(map.get(id.value.toString()))
-            .map(op => op.map(des => Item(id, des)))
+                    .succeed(map.get(id.value.toString()))
+                    .map(op => op.map(des => Item(id, des)))
         yield item
 
       def updateItem(id: ItemId, description: String): IO[DomainError, Unit] =
         ref.update(map => map.updated(id.value.toString(), description))
-    }))
+    })

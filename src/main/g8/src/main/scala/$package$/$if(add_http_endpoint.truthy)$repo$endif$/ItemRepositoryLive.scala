@@ -11,8 +11,8 @@ import javax.sql.DataSource
 
 final class ItemRepositoryLive(
     ds: DataSource,
-    ctx: PostgresZioJdbcContext[PluralizedTableNames])
-    extends ItemRepository:
+    ctx: PostgresZioJdbcContext[PluralizedTableNames],
+  ) extends ItemRepository:
 
   private val dsLayer = ZLayer(ZIO.succeed(ds))
 
@@ -27,16 +27,16 @@ final class ItemRepositoryLive(
   def add(description: String): IO[RepositoryError, ItemId] =
     ctx
       .transaction(for {
-        _ <- ctx.run(
-          quote {
-            items.insert(_.description -> lift(description)).returning(_.id)
-          }
-        )
-        result <- ctx.run(
-          quote {
-            items.filter(_.description == lift(description)).map(_.id)
-          }
-        )
+        _          <- ctx.run(
+                        quote {
+                          items.insert(_.description -> lift(description)).returning(_.id)
+                        }
+                      )
+        result     <- ctx.run(
+                        quote {
+                          items.filter(_.description == lift(description)).map(_.id)
+                        }
+                      )
         generatedId = result.headOption.fold(0L)(_.value)
       } yield ItemId(generatedId))
       .mapError(e => RepositoryError(e))

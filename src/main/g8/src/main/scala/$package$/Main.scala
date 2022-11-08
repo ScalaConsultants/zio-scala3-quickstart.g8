@@ -19,7 +19,6 @@ import $package$.repo._
 import $package$.service._
 $endif$
 
-
 object Main extends ZIOAppDefault:
 
   $if(add_http_endpoint.truthy)$
@@ -29,16 +28,21 @@ object Main extends ZIOAppDefault:
 
   private val serviceLayer = ItemServiceLive.layer
   $endif$
-  
+
   val routes =
     $if(add_http_endpoint.truthy)$HttpRoutes.app ++$endif$
-    Healthcheck.routes
+      Healthcheck.routes
 
-  val program = 
+  val program =
     for
       config <- getConfig[ServerConfig]
       _      <- Server.start(config.port, routes)
     yield ()
 
-  override val run = 
-    program.provide(ServerConfig.layer$if(add_http_endpoint.truthy)$, serviceLayer, repoLayer, dataSourceLayer$endif$)
+  override val run =
+    program.provide(
+      ServerConfig.layer$if(add_http_endpoint.truthy) $,
+      serviceLayer,
+      repoLayer,
+      dataSourceLayer$endif$,
+    )

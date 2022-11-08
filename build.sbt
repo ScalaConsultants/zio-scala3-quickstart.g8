@@ -1,13 +1,13 @@
-val zioVersion = "2.0.0"
-val zioHttpVersion = "2.0.0-RC10"
-val zioJsonVersion = "0.3.0-RC10"
-val logbackVersion = "1.2.11"
-val testcontainersVersion = "1.17.3"
+val zioVersion                 = "2.0.0"
+val zioHttpVersion             = "2.0.0-RC10"
+val zioJsonVersion             = "0.3.0-RC10"
+val logbackVersion             = "1.2.11"
+val testcontainersVersion      = "1.17.3"
 val testcontainersScalaVersion = "0.40.8"
-val quillVersion = "4.0.0"
-val postgresqlVersion = "42.4.0"
-val zioConfigVersion = "3.0.1"
-val zioMockVersion = "1.0.0-RC8"
+val quillVersion               = "4.0.0"
+val postgresqlVersion          = "42.4.0"
+val zioConfigVersion           = "3.0.1"
+val zioMockVersion             = "1.0.0-RC8"
 
 // This build is for this Giter8 template.
 // To test the template run `g8` or `g8Test` from the sbt session.
@@ -16,8 +16,8 @@ lazy val root = (project in file("."))
   .enablePlugins(ScriptedPlugin)
   .settings(
     resolvers += "Sonatype OSS Snapshots s01" at "https://s01.oss.sonatype.org/content/repositories/snapshots",
-    name := "zio-quickstart",
-    Test / test := {
+    name           := "zio-quickstart",
+    Test / test    := {
       val _ = (Test / g8Test).toTask("").value
     },
     testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework")),
