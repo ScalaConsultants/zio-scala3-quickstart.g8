@@ -17,8 +17,8 @@ lazy val root = (project in file("."))
   .settings(
     resolvers += "Sonatype OSS Snapshots s01" at "https://s01.oss.sonatype.org/content/repositories/snapshots",
     name := "zio-quickstart",
-    test in Test := {
-      val _ = (g8Test in Test).toTask("").value
+    Test / test := {
+      val _ = (Test / g8Test).toTask("").value
     },
     testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework")),
     scriptedLaunchOpts ++= List(

@@ -13,9 +13,9 @@ val zioMockVersion = "1.0.0-RC8"
 
 lazy val root = (project in file("."))
   .settings(
+    name := "$name$",
     inThisBuild(
       List(
-        name := "$name$",
         organization := "$package$",
         version := "0.0.1",
         scalaVersion := "$dotty_version$",
