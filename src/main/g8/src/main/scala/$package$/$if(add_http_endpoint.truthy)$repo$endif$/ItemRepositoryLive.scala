@@ -19,7 +19,7 @@ final class ItemRepositoryLive(
   import ctx._
 
   inline def items = quote {
-    querySchema[Item]("items", _.id.value -> "id", _.description -> "description")
+    querySchema[Item]("items")
   }
 
   // TODO return generated ID with the use of "returningGenerated" method
