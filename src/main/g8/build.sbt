@@ -1,14 +1,14 @@
-val zioVersion                 = "2.0.0"
+val zioVersion                 = "2.0.2"
 val zioHttpVersion             = "2.0.0-RC10"
 val zioJsonVersion             = "0.3.0-RC10"
-val logbackVersion             = "1.2.11"
+val logbackVersion             = "1.4.4"
 $if(add_http_endpoint.truthy)$
-val testcontainersVersion      = "1.17.3"
-val testcontainersScalaVersion = "0.40.8"
-val quillVersion               = "4.0.0"
-val postgresqlVersion          = "42.4.0"
+val testcontainersVersion      = "1.17.4"
+val testcontainersScalaVersion = "0.40.11"
+val quillVersion               = "4.6.0"
+val postgresqlVersion          = "42.5.0"
 $endif$
-val zioConfigVersion           = "3.0.1"
+val zioConfigVersion           = "3.0.2"
 val zioMockVersion             = "1.0.0-RC8"
 
 lazy val root = (project in file("."))
