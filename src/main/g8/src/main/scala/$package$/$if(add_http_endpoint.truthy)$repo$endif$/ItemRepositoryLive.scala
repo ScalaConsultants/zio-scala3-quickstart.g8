@@ -39,13 +39,13 @@ final class ItemRepositoryLive(
                       )
         generatedId = result.headOption.fold(0L)(_.value)
       } yield ItemId(generatedId))
-      .mapError(e => RepositoryError(e))
+      .mapError(RepositoryError(_))
       .provide(dsLayer)
 
   def delete(id: ItemId): IO[RepositoryError, Unit] =
     ctx
       .run(quote(items.filter(i => i.id == lift(id)).delete))
-      .mapError(e => new RepositoryError(e))
+      .mapError(RepositoryError(_))
       .provide(dsLayer)
       .unit
 
@@ -55,7 +55,7 @@ final class ItemRepositoryLive(
         items
       })
       .provide(dsLayer)
-      .mapError(e => new RepositoryError(e))
+      .mapError(RepositoryError(_))
 
   def getById(id: ItemId): IO[RepositoryError, Option[Item]] =
     ctx
@@ -63,7 +63,7 @@ final class ItemRepositoryLive(
         items.filter(_.id == lift(id))
       })
       .map(_.headOption)
-      .mapError(e => new RepositoryError(e))
+      .mapError(RepositoryError(_))
       .provide(dsLayer)
 
   def update(item: Item): IO[RepositoryError, Unit] =
@@ -73,7 +73,7 @@ final class ItemRepositoryLive(
           .filter(i => i.id == lift(item.id))
           .update(_.description -> lift(item.description))
       })
-      .mapError(e => new RepositoryError(e))
+      .mapError(RepositoryError(_))
       .provide(dsLayer)
       .unit
 
