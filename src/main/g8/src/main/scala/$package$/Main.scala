@@ -1,7 +1,7 @@
 package $package$
 
 $if(add_http_endpoint.truthy)$
-import io.getquill.context.ZioJdbc._
+import io.getquill.jdbczio.Quill
 $endif$
 import zhttp.http._
 import zhttp.service._
@@ -22,7 +22,7 @@ $endif$
 object Main extends ZIOAppDefault:
 
   $if(add_http_endpoint.truthy)$
-  private val dataSourceLayer = DataSourceLayer.fromPrefix("postgres-db")
+  private val dataSourceLayer = Quill.DataSource.fromPrefix("postgres-db")
 
   private val repoLayer = ItemRepositoryLive.layer
 
