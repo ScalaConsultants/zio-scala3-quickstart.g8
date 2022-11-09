@@ -18,7 +18,7 @@ lazy val root = (project in file("."))
       List(
         organization := "$package$",
         version      := "0.0.1",
-        scalaVersion := "$dotty_version$",
+        scalaVersion := "$scala_version$",
       )
     ),
     name           := "zio-quickstart",
