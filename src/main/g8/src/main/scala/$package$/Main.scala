@@ -14,7 +14,7 @@ $if(add_http_endpoint.truthy)$
 import $package$.api._
 $endif$
 import $package$.config.Configuration._
-import $package$.healthcheck._
+import $package$.service.HealthCheckService
 $if(add_http_endpoint.truthy)$
 import $package$.repo._
 import $package$.service._
@@ -29,12 +29,13 @@ object Main extends ZIOAppDefault:
 
   private val repoLayer = ItemRepositoryLive.layer
 
-  private val serviceLayer = ItemServiceLive.layer
+  private val itemServiceLayer = ItemServiceLive.layer
   $endif$
+  private val healthCheckServiceLayer = HealthCheckServiceLive.layer
 
   val routes =
     $if(add_http_endpoint.truthy)$HttpRoutes.app ++$endif$
-      Healthcheck.routes
+      HealthCheckRoutes.app
 
   val program =
     for
@@ -44,8 +45,9 @@ object Main extends ZIOAppDefault:
 
   override val run =
     program.provide(
+      healthCheckServiceLayer,
       ServerConfig.layer$if(add_http_endpoint.truthy) $,
-      serviceLayer,
+      itemServiceLayer,
       repoLayer,
       postgresLayer,
       dataSourceLayer$endif$,
