@@ -24,13 +24,7 @@ lazy val root = (project in file("."))
     name           := "zio-quickstart",
     libraryDependencies ++= Seq(
       $if(add_http_endpoint.truthy)$
-      "io.getquill"       %% "quill-jdbc"                      % quillVersion excludeAll (
-        ExclusionRule(organization = "org.scala-lang.modules")
-      ),
       "io.getquill"       %% "quill-jdbc-zio"                  % quillVersion excludeAll (
-        ExclusionRule(organization = "org.scala-lang.modules")
-      ),
-      "io.getquill"       %% "quill-jasync-postgres"           % quillVersion excludeAll (
         ExclusionRule(organization = "org.scala-lang.modules")
       ),
       "org.postgresql"     % "postgresql"                      % postgresqlVersion,
