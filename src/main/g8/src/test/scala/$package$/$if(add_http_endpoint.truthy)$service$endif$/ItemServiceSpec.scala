@@ -33,16 +33,16 @@ object ItemServiceSpec extends ZIOSpecDefault:
         found  <- assertZIO(getItemById(ItemId(123)))(isSome(equalTo(exampleItem)))
         mising <- assertZIO(getItemById(ItemId(124)))(isNone)
       yield found && mising
-    }.provideCustomLayer(getItemMock >>> ItemServiceLive.layer),
+    }.provide(getItemMock, ItemServiceLive.layer),
     suite("update item")(
       test("non existing item") {
         assertZIO(updateItem(ItemId(124), "bar").exit)(
           fails(equalTo(DomainError.BusinessError("Item with ID 124 not found")))
         )
-      }.provideCustomLayer(getByNonExistingId >>> ItemServiceLive.layer),
+      }.provide(getByNonExistingId, ItemServiceLive.layer),
       test("update succesfull") {
         assertZIO(updateItem(ItemId(123), "bar"))(isUnit)
-      }.provideCustomLayer(updateSuccesfullMock >>> ItemServiceLive.layer),
+      }.provide(updateSuccesfullMock, ItemServiceLive.layer),
     ),
   )
 

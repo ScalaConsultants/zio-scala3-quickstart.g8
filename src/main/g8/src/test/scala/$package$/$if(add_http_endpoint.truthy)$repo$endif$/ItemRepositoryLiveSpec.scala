@@ -1,5 +1,7 @@
 package $package$.repo
 
+import io.getquill.PluralizedTableNames
+import io.getquill.jdbczio.Quill
 import zio.test._
 import zio.test.Assertion._
 import zio.test.TestAspect._
@@ -11,10 +13,9 @@ object ItemRepositoryLiveSpec extends ZIOSpecDefault:
 
   val containerLayer = ZLayer.scoped(PostgresContainer.make())
 
-  val dataSourceLayer =
-    DataSourceBuilderLive
-      .layer
-      .flatMap(builder => ZLayer.fromFunction(() => builder.get.dataSource))
+  val dataSourceLayer = ZLayer(ZIO.service[DataSourceBuilder].map(_.dataSource))
+
+  val postgresLayer = Quill.Postgres.fromNamingStrategy (PluralizedTableNames)
 
   val repoLayer = ItemRepositoryLive.layer
 
@@ -54,6 +55,8 @@ object ItemRepositoryLiveSpec extends ZIOSpecDefault:
       },
     ).provideShared(
       containerLayer,
+      DataSourceBuilderLive.layer,
       dataSourceLayer,
+      postgresLayer,
       repoLayer
     ) @@ sequential

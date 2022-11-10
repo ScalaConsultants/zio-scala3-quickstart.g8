@@ -2,6 +2,7 @@ package $package$
 
 $if(add_http_endpoint.truthy)$
 import io.getquill.jdbczio.Quill
+import io.getquill.PluralizedTableNames
 $endif$
 import zhttp.http._
 import zhttp.service._
@@ -24,6 +25,8 @@ object Main extends ZIOAppDefault:
   $if(add_http_endpoint.truthy)$
   private val dataSourceLayer = Quill.DataSource.fromPrefix("postgres-db")
 
+  private val postgresLayer = Quill.Postgres.fromNamingStrategy(PluralizedTableNames)
+
   private val repoLayer = ItemRepositoryLive.layer
 
   private val serviceLayer = ItemServiceLive.layer
@@ -44,5 +47,6 @@ object Main extends ZIOAppDefault:
       ServerConfig.layer$if(add_http_endpoint.truthy) $,
       serviceLayer,
       repoLayer,
+      postgresLayer,
       dataSourceLayer$endif$,
     )
