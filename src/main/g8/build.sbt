@@ -2,12 +2,10 @@ val zioVersion                 = "2.0.2"
 val zioHttpVersion             = "2.0.0-RC10"
 val zioJsonVersion             = "0.3.0-RC10"
 val logbackVersion             = "1.4.4"
-$if(add_http_endpoint.truthy)$
 val testcontainersVersion      = "1.17.4"
 val testcontainersScalaVersion = "0.40.11"
 val quillVersion               = "4.6.0"
 val postgresqlVersion          = "42.5.0"
-$endif$
 val zioConfigVersion           = "3.0.2"
 val zioMockVersion             = "1.0.0-RC8"
 
@@ -23,12 +21,10 @@ lazy val root = (project in file("."))
     ),
     name           := "zio-quickstart",
     libraryDependencies ++= Seq(
-      $if(add_http_endpoint.truthy)$
       "io.getquill"       %% "quill-jdbc-zio"                  % quillVersion excludeAll (
         ExclusionRule(organization = "org.scala-lang.modules")
       ),
       "org.postgresql"     % "postgresql"                      % postgresqlVersion,
-      $endif$
       "dev.zio"           %% "zio"                             % zioVersion,
       "dev.zio"           %% "zio-streams"                     % zioVersion,
       "io.d11"            %% "zhttp"                           % zioHttpVersion,
@@ -40,13 +36,11 @@ lazy val root = (project in file("."))
       "dev.zio"           %% "zio-test-sbt"                    % zioVersion                 % Test,
       "dev.zio"           %% "zio-test-junit"                  % zioVersion                 % Test,
       "dev.zio"           %% "zio-mock"                        % zioMockVersion             % Test,
-      $if(add_http_endpoint.truthy)$
       "com.dimafeng"      %% "testcontainers-scala-postgresql" % testcontainersScalaVersion % Test,
       "org.testcontainers" % "testcontainers"                  % testcontainersVersion      % Test,
       "org.testcontainers" % "database-commons"                % testcontainersVersion      % Test,
       "org.testcontainers" % "postgresql"                      % testcontainersVersion      % Test,
       "org.testcontainers" % "jdbc"                            % testcontainersVersion      % Test,
-      $endif$
       "dev.zio"           %% "zio-test-magnolia"               % zioVersion                 % Test,
     ),
     testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework")),
