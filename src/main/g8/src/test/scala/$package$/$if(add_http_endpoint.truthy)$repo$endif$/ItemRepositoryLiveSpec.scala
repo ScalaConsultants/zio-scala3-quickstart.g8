@@ -7,7 +7,7 @@ import zio._
 import $package$.repo.postgresql._
 import $package$.domain._
 
-object PostgresRunnableSpec extends ZIOSpecDefault:
+object ItemRepositoryLiveSpec extends ZIOSpecDefault:
 
   val containerLayer = ZLayer.scoped(PostgresContainer.make())
 
@@ -52,4 +52,8 @@ object PostgresRunnableSpec extends ZIOSpecDefault:
           item <- ItemRepository.getById(ItemId(3))
         } yield assert(item)(isSome) && assert(item.get.description)(equalTo("updated item"))
       },
-    ).provideShared(containerLayer, dataSourceLayer, repoLayer) @@ sequential
+    ).provideShared(
+      containerLayer,
+      dataSourceLayer,
+      repoLayer
+    ) @@ sequential
