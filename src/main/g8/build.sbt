@@ -19,7 +19,7 @@ lazy val root = (project in file("."))
         scalaVersion := "$scala_version$",
       )
     ),
-    name           := "zio-quickstart",
+    name           := "$name$",
     libraryDependencies ++= Seq(
       "io.getquill"       %% "quill-jdbc-zio"                  % quillVersion excludeAll (
         ExclusionRule(organization = "org.scala-lang.modules")
