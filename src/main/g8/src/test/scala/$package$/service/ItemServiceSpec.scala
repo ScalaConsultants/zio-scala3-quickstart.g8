@@ -37,7 +37,7 @@ object ItemServiceSpec extends ZIOSpecDefault:
     suite("update item")(
       test("non existing item") {
         assertZIO(updateItem(ItemId(124), "bar").exit)(
-          fails(equalTo(DomainError.BusinessError("Item with ID 124 not found")))
+          fails(equalTo(BusinessError("Item with ID 124 not found")))
         )
       }.provide(getByNonExistingId, ItemServiceLive.layer),
       test("update succesfull") {

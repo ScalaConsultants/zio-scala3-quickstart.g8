@@ -15,14 +15,19 @@ object HttpRoutes:
 
   val app: HttpApp[ItemService, Nothing] = Http.collectZIO {
     case Method.GET -> !! / "items" =>
-      getAllItems().map(items =>
-        Response.json(
-          GetItems(items.map(item => GetItem(item.id.value, item.description))).toJson
+      getAllItems()
+        .mapError(_.asThrowable)
+        .orDie
+        .map(items =>
+          Response.json(
+            GetItems(items.map(item => GetItem(item.id.value, item.description))).toJson
+          )
         )
-      )
 
     case Method.GET -> !! / "items" / id =>
       getItemById(ItemId(id.toLong))
+        .mapError(_.asThrowable)
+        .orDie
         .map {
           case Some(item) => Response.json(GetItem(item.id.value, item.description).toJson)
           case None       => Response.status(Status.NotFound)
@@ -30,6 +35,8 @@ object HttpRoutes:
 
     case Method.DELETE -> !! / "items" / id =>
       deleteItem(ItemId(id.toLong))
+        .mapError(_.asThrowable)
+        .orDie
         .map(_ => Response.ok)
 
     case req @ Method.POST -> !! / "items" =>

@@ -10,7 +10,6 @@ import zio.config._
 import zio.stream._
 import $package$.api._
 import $package$.config.Configuration._
-import $package$.service.HealthCheckService
 import $package$.repo._
 import $package$.service._
 

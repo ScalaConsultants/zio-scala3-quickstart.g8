@@ -2,7 +2,6 @@ package $package$.repo
 
 import zio._
 import $package$.domain._
-import $package$.repo.RepositoryError
 
 trait ItemRepository:
   def add(description: String): IO[RepositoryError, ItemId]

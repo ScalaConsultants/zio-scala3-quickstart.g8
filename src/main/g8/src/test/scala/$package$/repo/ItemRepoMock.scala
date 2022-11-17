@@ -2,8 +2,7 @@ package $package$.repo
 
 import zio._
 import zio.mock._
-import $package$.domain.{ Item, ItemId }
-import $package$.domain.DomainError._
+import $package$.domain._
 import $package$.repo.ItemRepository
 
 object ItemRepoMock extends Mock[ItemRepository]:
