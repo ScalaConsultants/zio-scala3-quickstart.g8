@@ -5,7 +5,8 @@ import zhttp.service._
 import zio._
 import zio.json._
 import $package$.api.protocol._
-import $package$.domain.{ DomainError, ItemId }
+import $package$.api.Extensions._
+import $package$.domain.{DomainError, ItemId, ValidationError}
 import $package$.service.ItemService
 import $package$.service.ItemService._
 
@@ -40,12 +41,13 @@ object HttpRoutes:
         .map(_ => Response.ok)
 
     case req @ Method.POST -> !! / "items" =>
-      (for
-        body <- entity[CreateItem](req)
-                  .absolve
-                  .tapError(_ => ZIO.logInfo(s"Unparseable body"))
-        id   <- addItem(body.description)
-      yield GetItem(id.value, body.description)).either.map {
+      val effect: ZIO[ItemService, DomainError, GetItem] =
+        for {
+          createItem <- req.jsonBodyAs[CreateItem]
+          itemId     <- ItemService.addItem(createItem.description)
+        } yield GetItem(itemId.value, createItem.description)
+
+      effect.either.map {
         case Right(created) =>
           Response(
             Status.Created,
