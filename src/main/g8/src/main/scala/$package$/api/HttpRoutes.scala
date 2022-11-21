@@ -75,6 +75,25 @@ object HttpRoutes extends JsonSupport:
             .json(item.toJson)
             .setStatus(Status.Ok)
       }
+
+    case req @ Method.PATCH -> !! / "items" / itemId =>
+      val effect: ZIO[ItemService, DomainError, Item] =
+        for {
+          id                <- Utils.extractLong(itemId)
+          partialUpdateItem <- req.jsonBodyAs[PartialUpdateItem]
+          maybeItem         <- ItemService.partialUpdateItem(ItemId(id), partialUpdateItem.description)
+          item              <- maybeItem
+                                 .map(ZIO.succeed(_))
+                                 .getOrElse(ZIO.fail(NotFoundError))
+        } yield item
+
+      effect.either.map {
+        case Left(_)     => Response.status(Status.BadRequest)
+        case Right(item) =>
+          Response
+            .json(item.toJson)
+            .setStatus(Status.Ok)
+      }
   }
 
   private def entity[T: JsonDecoder](req: Request): ZIO[Any, Throwable, Either[String, T]] =

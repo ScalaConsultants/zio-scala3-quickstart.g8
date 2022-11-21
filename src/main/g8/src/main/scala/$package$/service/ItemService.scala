@@ -14,6 +14,8 @@ trait ItemService:
 
   def updateItem(id: ItemId, description: String): IO[DomainError, Option[Item]]
 
+  def partialUpdateItem(id: ItemId, description: Option[String]): IO[DomainError, Option[Item]]
+
 object ItemService:
   def addItem(description: String): ZIO[ItemService, DomainError, ItemId] =
     ZIO.serviceWithZIO[ItemService](_.addItem(description))
@@ -32,3 +34,6 @@ object ItemService:
       description: String,
     ): ZIO[ItemService, DomainError, Option[Item]] =
     ZIO.serviceWithZIO[ItemService](_.updateItem(id, description))
+
+  def partialUpdateItem(id: ItemId, description: Option[String]): ZIO[ItemService, DomainError, Option[Item]] =
+    ZIO.serviceWithZIO[ItemService](_.partialUpdateItem(id, description))

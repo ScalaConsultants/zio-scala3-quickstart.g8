@@ -24,6 +24,16 @@ final class ItemServiceLive(repo: ItemRepository) extends ItemService:
       maybeUpdated <- repo.update(item)
     } yield maybeUpdated.map(_ => item)
 
+  def partialUpdateItem(id: ItemId, description: Option[String]): IO[DomainError, Option[Item]] =
+    repo.getById(id).flatMap {
+      case None              => ZIO.succeed(None)
+      case Some(currentItem) =>
+        val nextItem = Item(id, description.getOrElse(currentItem.description))
+        repo
+          .update(nextItem)
+          .map(_ => Some(nextItem))
+    }
+
 object ItemServiceLive:
   val layer: URLayer[ItemRepository, ItemService] =
     ZLayer(ZIO.service[ItemRepository].map(ItemServiceLive(_)))

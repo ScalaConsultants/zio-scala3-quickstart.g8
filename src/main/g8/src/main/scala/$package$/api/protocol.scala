@@ -10,6 +10,10 @@ object protocol:
   object UpdateItem:
     implicit val updateItemDecoder: JsonDecoder[UpdateItem] = DeriveJsonDecoder.gen[UpdateItem]
 
+  final case class PartialUpdateItem(description: Option[String])
+  object PartialUpdateItem:
+    implicit val partialUpdateItemDecoder: JsonDecoder[PartialUpdateItem] = DeriveJsonDecoder.gen[PartialUpdateItem]
+
   final case class CreateItem(description: String)
   object CreateItem:
     implicit val createItemDecoder: JsonDecoder[CreateItem] = DeriveJsonDecoder.gen[CreateItem]
