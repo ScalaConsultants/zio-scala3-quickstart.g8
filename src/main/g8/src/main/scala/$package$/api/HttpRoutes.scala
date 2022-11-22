@@ -16,23 +16,22 @@ object HttpRoutes extends JsonSupport:
 
   val app: HttpApp[ItemService, Nothing] = Http.collectZIO {
     case Method.GET -> !! / "items" =>
-      getAllItems()
-        .mapError(_.asThrowable)
-        .orDie
-        .map(items =>
-          Response.json(
-            GetItems(items.map(item => GetItem(item.id.value, item.description))).toJson
-          )
-        )
+      val effect: ZIO[ItemService, DomainError, List[Item]] =
+        ItemService.getAllItems()
 
-    case Method.GET -> !! / "items" / id =>
-      getItemById(ItemId(id.toLong))
-        .mapError(_.asThrowable)
-        .orDie
-        .map {
-          case Some(item) => Response.json(GetItem(item.id.value, item.description).toJson)
-          case None       => Response.status(Status.NotFound)
-        }
+      effect.foldZIO(Utils.handleError, _.toResponseZIO)
+
+    case Method.GET -> !! / "items" / itemId =>
+      val effect: ZIO[ItemService, DomainError, Item] =
+        for {
+          id        <- Utils.extractLong(itemId)
+          maybeItem <- ItemService.getItemById(ItemId(id))
+          item      <- maybeItem
+                         .map(ZIO.succeed(_))
+                         .getOrElse(ZIO.fail(NotFoundError))
+        } yield item
+
+      effect.foldZIO(Utils.handleError, _.toResponseZIO)
 
     case Method.DELETE -> !! / "items" / itemId =>
       val effect: ZIO[ItemService, DomainError, Unit] =
