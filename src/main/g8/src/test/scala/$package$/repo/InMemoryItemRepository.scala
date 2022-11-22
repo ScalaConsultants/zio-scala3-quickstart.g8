@@ -31,11 +31,6 @@ final class InMemoryItemRepository(
       values <- dataRef.get
     } yield values.get(id)
 
-  def getByIds(ids: Set[ItemId]): IO[RepositoryError, List[Item]] =
-    for {
-      values <- dataRef.get
-    } yield values.filter(id => ids.contains(id._1)).view.values.toList
-
   def update(item: Item): IO[RepositoryError, Option[Unit]] =
     dataRef.modify { map =>
       if (!map.contains(item.id)) (None, map)

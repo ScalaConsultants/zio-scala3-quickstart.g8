@@ -7,7 +7,6 @@ import zio.json._
 import $package$.api.Extensions._
 import $package$.domain._
 import $package$.service.ItemService
-import $package$.service.ItemService._
 
 import java.nio.charset.StandardCharsets
 
@@ -79,6 +78,3 @@ object HttpRoutes extends JsonSupport:
       effect.foldZIO(Utils.handleError, _.toResponseZIO)
 
   }
-
-  private def entity[T: JsonDecoder](req: Request): ZIO[Any, Throwable, Either[String, T]] =
-    req.bodyAsString.map(_.fromJson[T])
