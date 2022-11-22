@@ -12,7 +12,7 @@ trait ItemService:
 
   def getItemById(id: ItemId): IO[DomainError, Option[Item]]
 
-  def updateItem(id: ItemId, description: String): IO[DomainError, Unit]
+  def updateItem(id: ItemId, description: String): IO[DomainError, Option[Item]]
 
 object ItemService:
   def addItem(description: String): ZIO[ItemService, DomainError, ItemId] =
@@ -30,5 +30,5 @@ object ItemService:
   def updateItem(
       id: ItemId,
       description: String,
-    ): ZIO[ItemService, DomainError, Unit] =
+    ): ZIO[ItemService, DomainError, Option[Item]] =
     ZIO.serviceWithZIO[ItemService](_.updateItem(id, description))

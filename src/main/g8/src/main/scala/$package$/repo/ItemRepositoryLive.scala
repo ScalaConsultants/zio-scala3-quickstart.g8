@@ -5,6 +5,7 @@ import io.getquill.jdbczio.Quill
 import zio.{ IO, URLayer, ZIO, ZLayer }
 import $package$.domain._
 
+import java.sql.SQLException
 import javax.sql.DataSource
 
 final class ItemRepositoryLive(quill: Quill.Postgres[PluralizedTableNames]) extends ItemRepository:
@@ -53,14 +54,16 @@ final class ItemRepositoryLive(quill: Quill.Postgres[PluralizedTableNames]) exte
       .map(_.headOption)
       .mapError(RepositoryError(_))
 
-  def update(item: Item): IO[RepositoryError, Unit] =
+  def update(item: Item): IO[RepositoryError, Option[Unit]] =
     run(quote {
       items
         .filter(i => i.id == lift(item.id))
         .update(_.description -> lift(item.description))
     })
-      .mapError(RepositoryError(_))
-      .unit
+      .map(n => if (n > 0) Some(()) else None)
+      .refineOrDie {
+        case e: SQLException => RepositoryError(e)
+      }
 
 object ItemRepositoryLive:
 

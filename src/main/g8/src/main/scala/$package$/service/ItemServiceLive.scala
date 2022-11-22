@@ -18,14 +18,11 @@ final class ItemServiceLive(repo: ItemRepository) extends ItemService:
   def getItemById(id: ItemId): IO[DomainError, Option[Item]] =
     repo.getById(id)
 
-  def updateItem(id: ItemId, description: String): IO[DomainError, Unit] =
-    for
-      foundOption <- getItemById(id)
-      _           <- ZIO
-                       .fromOption(foundOption)
-                       .mapError(_ => BusinessError(s"Item with ID \${id.value} not found"))
-                       .flatMap(_ => repo.update(Item(id, description)))
-    yield ()
+  def updateItem(id: ItemId, description: String): IO[DomainError, Option[Item]] =
+    for {
+      item         <- ZIO.succeed(Item(id, description))
+      maybeUpdated <- repo.update(item)
+    } yield maybeUpdated.map(_ => item)
 
 object ItemServiceLive:
   val layer: URLayer[ItemRepository, ItemService] =

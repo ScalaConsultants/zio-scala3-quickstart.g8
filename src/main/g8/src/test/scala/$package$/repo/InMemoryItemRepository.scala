@@ -33,8 +33,11 @@ final class InMemoryItemRepository(
       values <- dataRef.get
     } yield values.filter(id => ids.contains(id._1)).view.values.toList
 
-  def update(item: Item): IO[RepositoryError, Unit] =
-    dataRef.update(map => map + (item.id -> item))
+  def update(item: Item): IO[RepositoryError, Option[Unit]] =
+    dataRef.modify { map =>
+      if (!map.contains(item.id)) (None, map)
+      else (Some(()), map.updated(item.id, item))
+    }
 
 object InMemoryItemRepository:
   val layer: ZLayer[Random, Nothing, ItemRepository] =

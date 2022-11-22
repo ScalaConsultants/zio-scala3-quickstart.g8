@@ -2,6 +2,8 @@ package $package$.api
 
 import zio.json._
 
+import $package$.domain.{ Item, ItemId }
+
 object protocol:
 
   final case class UpdateItem(description: String)
@@ -19,3 +21,9 @@ object protocol:
   final case class GetItem(id: Long, description: String)
   object GetItem:
     implicit val itemCreatedEncoder: JsonEncoder[GetItem] = DeriveJsonEncoder.gen[GetItem]
+
+trait JsonSupport:
+  implicit val itemIdEncoder: JsonEncoder[ItemId] = JsonEncoder[Long].contramap(_.value)
+  implicit val itemEncoder: JsonEncoder[Item]     = DeriveJsonEncoder.gen[Item]
+
+object JsonSupport extends JsonSupport

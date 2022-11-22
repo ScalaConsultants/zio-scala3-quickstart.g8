@@ -22,26 +22,26 @@ object ItemServiceSpec extends ZIOSpecDefault:
   val getByNonExistingId: ULayer[ItemRepository] =
     ItemRepoMock.GetById(equalTo(ItemId(124)), value(None))
 
-  val updateSuccesfullMock: ULayer[ItemRepository] = ItemRepoMock.GetById(
-    equalTo(ItemId(123)),
-    value(Some(exampleItem)),
-  ) ++ ItemRepoMock.Update(equalTo(exampleItem.copy(description = "bar")))
+  val updateMock: ULayer[ItemRepository] =
+    ItemRepoMock.Update(
+      hasField("id", _.id, equalTo(exampleItem.id)),
+      value(Some(())),
+    ) ++ ItemRepoMock.Update(
+      hasField("id", _.id, equalTo(ItemId(124))),
+      value(None),
+    )
 
   def spec = suite("item service test")(
     test("get item id accept long") {
-      for
-        found  <- assertZIO(getItemById(ItemId(123)))(isSome(equalTo(exampleItem)))
-        mising <- assertZIO(getItemById(ItemId(124)))(isNone)
-      yield found && mising
+      for {
+        found   <- assertZIO(getItemById(ItemId(123)))(isSome(equalTo(exampleItem)))
+        missing <- assertZIO(getItemById(ItemId(124)))(isNone)
+      } yield found && missing
     }.provide(getItemMock, ItemServiceLive.layer),
-    suite("update item")(
-      test("non existing item") {
-        assertZIO(updateItem(ItemId(124), "bar").exit)(
-          fails(equalTo(BusinessError("Item with ID 124 not found")))
-        )
-      }.provide(getByNonExistingId, ItemServiceLive.layer),
-      test("update succesfull") {
-        assertZIO(updateItem(ItemId(123), "bar"))(isUnit)
-      }.provide(updateSuccesfullMock, ItemServiceLive.layer),
-    ),
+    test("update item") {
+      for {
+        found   <- assertZIO(updateItem(ItemId(123), "foo"))(isSome(equalTo(Item(ItemId(123), "foo"))))
+        missing <- assertZIO(updateItem(ItemId(124), "bar"))(isNone)
+      } yield found && missing
+    }.provide(updateMock, ItemServiceLive.layer),
   )

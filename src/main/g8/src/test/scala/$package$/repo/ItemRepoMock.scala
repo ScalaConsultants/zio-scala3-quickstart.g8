@@ -10,7 +10,7 @@ object ItemRepoMock extends Mock[ItemRepository]:
   object Delete  extends Effect[ItemId, Nothing, Unit]
   object GetAll  extends Effect[Unit, Nothing, List[Item]]
   object GetById extends Effect[ItemId, Nothing, Option[Item]]
-  object Update  extends Effect[Item, Nothing, Unit]
+  object Update  extends Effect[Item, Nothing, Option[Unit]]
 
   val compose: URLayer[Proxy, ItemRepository] =
     ZLayer.fromFunction { (proxy: Proxy) =>

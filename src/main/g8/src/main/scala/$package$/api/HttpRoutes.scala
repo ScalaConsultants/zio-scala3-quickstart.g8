@@ -6,13 +6,13 @@ import zio._
 import zio.json._
 import $package$.api.protocol._
 import $package$.api.Extensions._
-import $package$.domain.{DomainError, ItemId, ValidationError}
+import $package$.domain._
 import $package$.service.ItemService
 import $package$.service.ItemService._
 
 import java.nio.charset.StandardCharsets
 
-object HttpRoutes:
+object HttpRoutes extends JsonSupport:
 
   val app: HttpApp[ItemService, Nothing] = Http.collectZIO {
     case Method.GET -> !! / "items" =>
@@ -57,15 +57,23 @@ object HttpRoutes:
         case Left(_)        => Response.status(Status.BadRequest)
       }
 
-    case req @ Method.PUT -> !! / "items" / id =>
-      (for
-        update <- entity[UpdateItem](req)
-                    .absolve
-                    .tapError(_ => ZIO.logInfo(s"Unparseable body "))
-        _      <- updateItem(ItemId(id.toLong), update.description)
-      yield ()).either.map {
-        case Left(_)  => Response.status(Status.BadRequest)
-        case Right(_) => Response.ok
+    case req @ Method.PUT -> !! / "items" / itemId =>
+      val effect: ZIO[ItemService, DomainError, Item] =
+        for {
+          id                <- Utils.extractLong(itemId)
+          updateItemRequest <- req.jsonBodyAs[UpdateItem]
+          maybeItem         <- ItemService.updateItem(ItemId(id), updateItemRequest.description)
+          item              <- maybeItem
+                                 .map(ZIO.succeed(_))
+                                 .getOrElse(ZIO.fail(NotFoundError))
+        } yield item
+
+      effect.either.map {
+        case Left(_)     => Response.status(Status.BadRequest)
+        case Right(item) =>
+          Response
+            .json(item.toJson)
+            .setStatus(Status.Ok)
       }
   }
 
