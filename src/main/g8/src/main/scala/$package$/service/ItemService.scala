@@ -6,7 +6,7 @@ import $package$.domain._
 trait ItemService:
   def addItem(description: String): IO[DomainError, ItemId]
 
-  def deleteItem(id: ItemId): IO[DomainError, Unit]
+  def deleteItem(id: ItemId): IO[DomainError, Long]
 
   def getAllItems(): IO[DomainError, List[Item]]
 
@@ -20,7 +20,7 @@ object ItemService:
   def addItem(description: String): ZIO[ItemService, DomainError, ItemId] =
     ZIO.serviceWithZIO[ItemService](_.addItem(description))
 
-  def deleteItem(id: ItemId): ZIO[ItemService, DomainError, Unit] =
+  def deleteItem(id: ItemId): ZIO[ItemService, DomainError, Long] =
     ZIO.serviceWithZIO[ItemService](_.deleteItem(id))
 
   def getAllItems(): ZIO[ItemService, DomainError, List[Item]] =

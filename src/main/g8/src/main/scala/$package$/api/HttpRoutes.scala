@@ -34,11 +34,16 @@ object HttpRoutes extends JsonSupport:
           case None       => Response.status(Status.NotFound)
         }
 
-    case Method.DELETE -> !! / "items" / id =>
-      deleteItem(ItemId(id.toLong))
-        .mapError(_.asThrowable)
-        .orDie
-        .map(_ => Response.ok)
+    case Method.DELETE -> !! / "items" / itemId =>
+      val effect: ZIO[ItemService, DomainError, Unit] =
+        for {
+          id     <- Utils.extractLong(itemId)
+          amount <- ItemService.deleteItem(ItemId(id))
+          _      <- if (amount == 0) ZIO.fail(NotFoundError)
+                    else ZIO.unit
+        } yield ()
+
+      effect.foldZIO(Utils.handleError, _.toEmptyResponseZIO)
 
     case req @ Method.POST -> !! / "items" =>
       val effect: ZIO[ItemService, DomainError, GetItem] =

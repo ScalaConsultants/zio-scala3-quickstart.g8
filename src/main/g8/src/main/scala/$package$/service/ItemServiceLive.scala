@@ -9,7 +9,7 @@ final class ItemServiceLive(repo: ItemRepository) extends ItemService:
   def addItem(description: String): IO[DomainError, ItemId] =
     repo.add(description)
 
-  def deleteItem(id: ItemId): IO[DomainError, Unit] =
+  def deleteItem(id: ItemId): IO[DomainError, Long] =
     repo.delete(id)
 
   def getAllItems(): IO[DomainError, List[Item]] =

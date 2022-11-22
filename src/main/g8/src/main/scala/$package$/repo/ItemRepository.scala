@@ -6,7 +6,7 @@ import $package$.domain._
 trait ItemRepository:
   def add(description: String): IO[RepositoryError, ItemId]
 
-  def delete(id: ItemId): IO[RepositoryError, Unit]
+  def delete(id: ItemId): IO[RepositoryError, Long]
 
   def getAll(): IO[RepositoryError, List[Item]]
 
@@ -18,7 +18,7 @@ object ItemRepository:
   def add(description: String): ZIO[ItemRepository, RepositoryError, ItemId] =
     ZIO.serviceWithZIO[ItemRepository](_.add(description))
 
-  def delete(id: ItemId): ZIO[ItemRepository, RepositoryError, Unit] =
+  def delete(id: ItemId): ZIO[ItemRepository, RepositoryError, Long] =
     ZIO.serviceWithZIO[ItemRepository](_.delete(id))
 
   def getAll(): ZIO[ItemRepository, RepositoryError, List[Item]] =

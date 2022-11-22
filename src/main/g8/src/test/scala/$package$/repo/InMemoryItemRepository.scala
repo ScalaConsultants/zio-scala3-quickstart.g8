@@ -15,8 +15,11 @@ final class InMemoryItemRepository(
       _      <- dataRef.update(map => map + (id -> Item(id, description)))
     } yield id
 
-  def delete(id: ItemId): IO[RepositoryError, Unit] =
-    dataRef.update(map => map - id)
+  def delete(id: ItemId): IO[RepositoryError, Long] =
+    dataRef.modify { map =>
+      if (!map.contains(id)) (0L, map)
+      else (1L, map.removed(id))
+    }
 
   def getAll(): IO[RepositoryError, List[Item]] =
     for {

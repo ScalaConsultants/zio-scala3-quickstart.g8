@@ -7,7 +7,7 @@ import $package$.repo.ItemRepository
 
 object ItemRepoMock extends Mock[ItemRepository]:
   object Add     extends Effect[String, Nothing, ItemId]
-  object Delete  extends Effect[ItemId, Nothing, Unit]
+  object Delete  extends Effect[ItemId, Nothing, Long]
   object GetAll  extends Effect[Unit, Nothing, List[Item]]
   object GetById extends Effect[ItemId, Nothing, Option[Item]]
   object Update  extends Effect[Item, Nothing, Option[Unit]]

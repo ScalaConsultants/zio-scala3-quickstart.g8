@@ -36,10 +36,9 @@ final class ItemRepositoryLive(quill: Quill.Postgres[PluralizedTableNames]) exte
     }
       .mapError(RepositoryError(_))
 
-  def delete(id: ItemId): IO[RepositoryError, Unit] =
+  def delete(id: ItemId): IO[RepositoryError, Long] =
     run(quote(items.filter(i => i.id == lift(id)).delete))
       .mapError(RepositoryError(_))
-      .unit
 
   def getAll(): IO[RepositoryError, List[Item]] =
     run(quote {
