@@ -50,15 +50,7 @@ object HttpRoutes extends JsonSupport:
           itemId     <- ItemService.addItem(createItem.description)
         } yield Item(itemId, createItem.description)
 
-      effect.either.map {
-        case Right(created) =>
-          Response(
-            Status.Created,
-            Headers(HeaderNames.contentType, HeaderValues.applicationJson),
-            HttpData.fromString(created.toJson),
-          )
-        case Left(_)        => Response.status(Status.BadRequest)
-      }
+      effect.foldZIO(Utils.handleError, _.toResponseZIO(Status.Created))
 
     case req @ Method.PUT -> !! / "items" / itemId =>
       val effect: ZIO[ItemService, DomainError, Item] =
@@ -71,13 +63,7 @@ object HttpRoutes extends JsonSupport:
                           .getOrElse(ZIO.fail(NotFoundError))
         } yield item
 
-      effect.either.map {
-        case Left(_)     => Response.status(Status.BadRequest)
-        case Right(item) =>
-          Response
-            .json(item.toJson)
-            .setStatus(Status.Ok)
-      }
+      effect.foldZIO(Utils.handleError, _.toResponseZIO)
 
     case req @ Method.PATCH -> !! / "items" / itemId =>
       val effect: ZIO[ItemService, DomainError, Item] =
@@ -90,13 +76,8 @@ object HttpRoutes extends JsonSupport:
                                  .getOrElse(ZIO.fail(NotFoundError))
         } yield item
 
-      effect.either.map {
-        case Left(_)     => Response.status(Status.BadRequest)
-        case Right(item) =>
-          Response
-            .json(item.toJson)
-            .setStatus(Status.Ok)
-      }
+      effect.foldZIO(Utils.handleError, _.toResponseZIO)
+
   }
 
   private def entity[T: JsonDecoder](req: Request): ZIO[Any, Throwable, Either[String, T]] =
