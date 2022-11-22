@@ -4,7 +4,6 @@ import zhttp.http._
 import zhttp.service._
 import zio._
 import zio.json._
-import $package$.api.protocol._
 import $package$.api.Extensions._
 import $package$.domain._
 import $package$.service.ItemService
@@ -45,11 +44,11 @@ object HttpRoutes extends JsonSupport:
       effect.foldZIO(Utils.handleError, _.toEmptyResponseZIO)
 
     case req @ Method.POST -> !! / "items" =>
-      val effect: ZIO[ItemService, DomainError, GetItem] =
+      val effect: ZIO[ItemService, DomainError, Item] =
         for {
-          createItem <- req.jsonBodyAs[CreateItem]
+          createItem <- req.jsonBodyAs[CreateItemRequest]
           itemId     <- ItemService.addItem(createItem.description)
-        } yield GetItem(itemId.value, createItem.description)
+        } yield Item(itemId, createItem.description)
 
       effect.either.map {
         case Right(created) =>
@@ -64,12 +63,12 @@ object HttpRoutes extends JsonSupport:
     case req @ Method.PUT -> !! / "items" / itemId =>
       val effect: ZIO[ItemService, DomainError, Item] =
         for {
-          id                <- Utils.extractLong(itemId)
-          updateItemRequest <- req.jsonBodyAs[UpdateItem]
-          maybeItem         <- ItemService.updateItem(ItemId(id), updateItemRequest.description)
-          item              <- maybeItem
-                                 .map(ZIO.succeed(_))
-                                 .getOrElse(ZIO.fail(NotFoundError))
+          id         <- Utils.extractLong(itemId)
+          updateItem <- req.jsonBodyAs[UpdateItemRequest]
+          maybeItem  <- ItemService.updateItem(ItemId(id), updateItem.description)
+          item       <- maybeItem
+                          .map(ZIO.succeed(_))
+                          .getOrElse(ZIO.fail(NotFoundError))
         } yield item
 
       effect.either.map {
@@ -84,7 +83,7 @@ object HttpRoutes extends JsonSupport:
       val effect: ZIO[ItemService, DomainError, Item] =
         for {
           id                <- Utils.extractLong(itemId)
-          partialUpdateItem <- req.jsonBodyAs[PartialUpdateItem]
+          partialUpdateItem <- req.jsonBodyAs[PartialUpdateItemRequest]
           maybeItem         <- ItemService.partialUpdateItem(ItemId(id), partialUpdateItem.description)
           item              <- maybeItem
                                  .map(ZIO.succeed(_))
