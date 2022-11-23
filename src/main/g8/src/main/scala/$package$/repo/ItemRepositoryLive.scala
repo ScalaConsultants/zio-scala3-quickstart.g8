@@ -16,25 +16,25 @@ final class ItemRepositoryLive(quill: Quill.Postgres[PluralizedTableNames]) exte
     querySchema[Item]("items")
   }
 
-  // TODO return generated ID with the use of "returningGenerated" method
-  // issue opened https://github.com/getquill/protoquill/issues/22
-  def add(description: String): IO[RepositoryError, ItemId] =
-    transaction {
-      for {
-        _          <- run(
-                        quote {
-                          items.insert(_.description -> lift(description)).returning(_.id)
-                        }
-                      )
-        result     <- run(
-                        quote {
-                          items.filter(_.description == lift(description)).map(_.id)
-                        }
-                      )
-        generatedId = result.headOption.fold(0L)(_.value)
-      } yield ItemId(generatedId)
+  override def add(description: String): IO[RepositoryError, ItemId] =
+    val effect: IO[SQLException, ItemId] = run {
+      quote {
+        items
+          .insertValue(lift(Item(ItemId(0), description)))
+          .returningGenerated(_.id)
+      }
     }
-      .mapError(RepositoryError(_))
+
+    effect
+      .either
+      .resurrect
+      .refineOrDie {
+        case e: NullPointerException => RepositoryError(e)
+      }
+      .flatMap {
+        case Left(e: SQLException) => ZIO.fail(RepositoryError(e))
+        case Right(itemId: ItemId) => ZIO.succeed(itemId)
+      }
 
   def delete(id: ItemId): IO[RepositoryError, Long] =
     run(quote(items.filter(i => i.id == lift(id)).delete))
