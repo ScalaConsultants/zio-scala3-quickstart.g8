@@ -36,29 +36,51 @@ final class ItemRepositoryLive(quill: Quill.Postgres[PluralizedTableNames]) exte
         case Right(itemId: ItemId) => ZIO.succeed(itemId)
       }
 
-  def delete(id: ItemId): IO[RepositoryError, Long] =
-    run(quote(items.filter(i => i.id == lift(id)).delete))
-      .mapError(RepositoryError(_))
+  override def delete(id: ItemId): IO[RepositoryError, Long] =
+    val effect: IO[SQLException, Long] = run {
+      quote {
+        items.filter(i => i.id == lift(id)).delete
+      }
+    }
 
-  def getAll(): IO[RepositoryError, List[Item]] =
-    run(quote {
-      items
-    })
-      .mapError(RepositoryError(_))
+    effect.refineOrDie {
+      case e: SQLException => RepositoryError(e)
+    }
 
-  def getById(id: ItemId): IO[RepositoryError, Option[Item]] =
-    run(quote {
-      items.filter(_.id == lift(id))
-    })
+  override def getAll(): IO[RepositoryError, List[Item]] =
+    val effect: IO[SQLException, List[Item]] = run {
+      quote {
+        items
+      }
+    }
+
+    effect.refineOrDie {
+      case e: SQLException => RepositoryError(e)
+    }
+
+  override def getById(id: ItemId): IO[RepositoryError, Option[Item]] =
+    val effect: IO[SQLException, List[Item]] = run {
+      quote {
+        items.filter(_.id == lift(id))
+      }
+    }
+
+    effect
       .map(_.headOption)
-      .mapError(RepositoryError(_))
+      .refineOrDie {
+        case e: SQLException => RepositoryError(e)
+      }
 
-  def update(item: Item): IO[RepositoryError, Option[Unit]] =
-    run(quote {
-      items
-        .filter(i => i.id == lift(item.id))
-        .update(_.description -> lift(item.description))
-    })
+  override def update(nextItem: Item): IO[RepositoryError, Option[Unit]] =
+    val effect: IO[SQLException, Long] = run {
+      quote {
+        items
+          .filter(item => item.id == lift(nextItem.id))
+          .updateValue(lift(nextItem))
+      }
+    }
+
+    effect
       .map(n => if (n > 0) Some(()) else None)
       .refineOrDie {
         case e: SQLException => RepositoryError(e)
