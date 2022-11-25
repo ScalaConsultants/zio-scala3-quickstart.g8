@@ -15,7 +15,7 @@ object ItemRepositoryLiveSpec extends ZIOSpecDefault:
 
   val dataSourceLayer = ZLayer(ZIO.service[DataSourceBuilder].map(_.dataSource))
 
-  val postgresLayer = Quill.Postgres.fromNamingStrategy (PluralizedTableNames)
+  val postgresLayer = Quill.Postgres.fromNamingStrategy(PluralizedTableNames)
 
   val repoLayer = ItemRepositoryLive.layer
 
@@ -23,9 +23,9 @@ object ItemRepositoryLiveSpec extends ZIOSpecDefault:
     suite("item repository test with postgres test container")(
       test("save items returns their ids") {
         for {
-          id1 <- ItemRepository.add("first item")
-          id2 <- ItemRepository.add("second item")
-          id3 <- ItemRepository.add("third item")
+          id1 <- ItemRepository.add(ItemData("first item", BigDecimal(1)))
+          id2 <- ItemRepository.add(ItemData("second item", BigDecimal(2)))
+          id3 <- ItemRepository.add(ItemData("third item", BigDecimal(3)))
 
         } yield assert(id1)(equalTo(ItemId(1))) && assert(id2)(equalTo(ItemId(2))) && assert(id3)(
           equalTo(ItemId(3))
@@ -45,18 +45,22 @@ object ItemRepositoryLiveSpec extends ZIOSpecDefault:
       test("get item 2") {
         for {
           item <- ItemRepository.getById(ItemId(2))
-        } yield assert(item)(isSome) && assert(item.get.description)(equalTo("second item"))
+        } yield assert(item)(isSome) &&
+        assert(item.get.name)(equalTo("second item")) &&
+        assert(item.get.price)(equalTo(BigDecimal("2")))
       },
       test("update item 3") {
         for {
-          _    <- ItemRepository.update(Item(ItemId(3), "updated item"))
+          _    <- ItemRepository.update(ItemId(3), ItemData("updated item", BigDecimal(3)))
           item <- ItemRepository.getById(ItemId(3))
-        } yield assert(item)(isSome) && assert(item.get.description)(equalTo("updated item"))
+        } yield assert(item)(isSome) &&
+        assert(item.get.name)(equalTo("updated item")) &&
+        assert(item.get.price)(equalTo(BigDecimal(3)))
       },
     ).provideShared(
       containerLayer,
       DataSourceBuilderLive.layer,
       dataSourceLayer,
       postgresLayer,
-      repoLayer
+      repoLayer,
     ) @@ sequential

@@ -16,11 +16,11 @@ final class ItemRepositoryLive(quill: Quill.Postgres[PluralizedTableNames]) exte
     querySchema[Item]("items")
   }
 
-  override def add(description: String): IO[RepositoryError, ItemId] =
+  override def add(data: ItemData): IO[RepositoryError, ItemId] =
     val effect: IO[SQLException, ItemId] = run {
       quote {
         items
-          .insertValue(lift(Item(ItemId(0), description)))
+          .insertValue(lift(Item.withData(ItemId(0), data)))
           .returningGenerated(_.id)
       }
     }
@@ -71,12 +71,12 @@ final class ItemRepositoryLive(quill: Quill.Postgres[PluralizedTableNames]) exte
         case e: SQLException => RepositoryError(e)
       }
 
-  override def update(nextItem: Item): IO[RepositoryError, Option[Unit]] =
+  override def update(itemId: ItemId, data: ItemData): IO[RepositoryError, Option[Unit]] =
     val effect: IO[SQLException, Long] = run {
       quote {
         items
-          .filter(item => item.id == lift(nextItem.id))
-          .updateValue(lift(nextItem))
+          .filter(item => item.id == lift(itemId))
+          .updateValue(lift(Item.withData(itemId, data)))
       }
     }
 
