@@ -22,10 +22,10 @@ final class ItemServiceLive(repo: ItemRepository) extends ItemService:
   def updateItem(id: ItemId, description: String): IO[DomainError, Unit] =
     for
       foundOption <- getItemById(id)
-      _ <- ZIO
-        .fromOption(foundOption)
-        .mapError(_ => BusinessError(s"Item with ID \${id.value} not found"))
-        .flatMap(item => repo.update(Item(id, description)).orDie)
+      _           <- ZIO
+                       .fromOption(foundOption)
+                       .mapError(_ => BusinessError(s"Item with ID \${id.value} not found"))
+                       .flatMap(item => repo.update(Item(id, description)).orDie)
     yield ()
 
 object ItemServiceLive:
