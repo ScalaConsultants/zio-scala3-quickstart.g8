@@ -1,13 +1,13 @@
-val zioVersion                 = "2.0.2"
-val zioHttpVersion             = "2.0.0-RC10"
-val zioJsonVersion             = "0.3.0-RC10"
-val logbackVersion             = "1.4.4"
-val testcontainersVersion      = "1.17.4"
-val testcontainersScalaVersion = "0.40.11"
-val quillVersion               = "4.6.0"
-val postgresqlVersion          = "42.5.0"
-val zioConfigVersion           = "3.0.2"
-val zioMockVersion             = "1.0.0-RC8"
+// Dependencies are needed for Scala Steward to check if there are newer versions
+val zioVersion            = "2.0.2"
+val zioJsonVersion        = "0.3.0-RC10"
+val zioConfigVersion      = "3.0.2"
+val logbackClassicVersion = "1.4.4"
+val postgresqlVersion     = "42.5.0"
+val testContainersVersion = "0.40.11"
+val zioMockVersion        = "1.0.0-RC8"
+val zioHttpVersion        = "2.0.0-RC10"
+val quillVersion          = "4.6.0"
 
 // This build is for this Giter8 template.
 // To test the template run `g8` or `g8Test` from the sbt session.
@@ -15,12 +15,10 @@ val zioMockVersion             = "1.0.0-RC8"
 lazy val root = (project in file("."))
   .enablePlugins(ScriptedPlugin)
   .settings(
-    resolvers += "Sonatype OSS Snapshots s01" at "https://s01.oss.sonatype.org/content/repositories/snapshots",
-    name           := "zio-quickstart",
+    name           := "zio-scala3-quickstart",
     Test / test    := {
       val _ = (Test / g8Test).toTask("").value
     },
-    testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework")),
     scriptedLaunchOpts ++= List(
       "-Xms1024m",
       "-Xmx1024m",
@@ -32,4 +30,22 @@ lazy val root = (project in file("."))
       "typesafe",
       url("https://repo.typesafe.com/typesafe/ivy-releases/"),
     )(Resolver.ivyStylePatterns),
+    libraryDependencies ++= Seq(
+      "io.getquill"       %% "quill-jdbc-zio"                  % quillVersion,
+      "org.postgresql"     % "postgresql"                      % postgresqlVersion,
+      "dev.zio"           %% "zio"                             % zioVersion,
+      "dev.zio"           %% "zio-streams"                     % zioVersion,
+      "io.d11"            %% "zhttp"                           % zioHttpVersion,
+      "dev.zio"           %% "zio-config"                      % zioConfigVersion,
+      "dev.zio"           %% "zio-config-typesafe"             % zioConfigVersion,
+      "ch.qos.logback"     % "logback-classic"                 % logbackClassicVersion,
+      "dev.zio"           %% "zio-json"                        % zioJsonVersion,
+      "dev.zio"           %% "zio-test"                        % zioVersion,
+      "dev.zio"           %% "zio-test-sbt"                    % zioVersion,
+      "dev.zio"           %% "zio-test-junit"                  % zioVersion,
+      "dev.zio"           %% "zio-mock"                        % zioMockVersion,
+      "com.dimafeng"      %% "testcontainers-scala-postgresql" % testContainersVersion,
+      "dev.zio"           %% "zio-test-magnolia"               % zioVersion,
+    ),
+    testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework"))
   )

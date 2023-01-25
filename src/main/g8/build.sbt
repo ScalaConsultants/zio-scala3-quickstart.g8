@@ -1,22 +1,19 @@
-val zioVersion                 = "2.0.2"
-val zioHttpVersion             = "2.0.0-RC10"
-val zioJsonVersion             = "0.3.0-RC10"
-val logbackVersion             = "1.4.4"
-val testcontainersVersion      = "1.17.4"
-val testcontainersScalaVersion = "0.40.11"
-val quillVersion               = "4.6.0"
-val postgresqlVersion          = "42.5.0"
-val zioConfigVersion           = "3.0.2"
-val zioMockVersion             = "1.0.0-RC8"
+val zioVersion            = "2.0.2"
+val zioJsonVersion        = "0.3.0-RC10"
+val zioConfigVersion      = "3.0.2"
+val logbackClassicVersion = "1.4.4"
+val postgresqlVersion     = "42.5.0"
+val testContainersVersion = "0.40.11"
+val zioMockVersion        = "1.0.0-RC8"
+val zioHttpVersion        = "2.0.0-RC10"
+val quillVersion          = "4.6.0"
 
 lazy val root = (project in file("."))
   .settings(
-    name           := "$name$",
     inThisBuild(
       List(
-        organization := "$package$",
-        version      := "0.0.1",
-        scalaVersion := "$scala_version$",
+        organization := "$organization$",
+        scalaVersion := "$scala_version$"
       )
     ),
     name           := "$name$",
@@ -30,17 +27,13 @@ lazy val root = (project in file("."))
       "io.d11"            %% "zhttp"                           % zioHttpVersion,
       "dev.zio"           %% "zio-config"                      % zioConfigVersion,
       "dev.zio"           %% "zio-config-typesafe"             % zioConfigVersion,
-      "ch.qos.logback"     % "logback-classic"                 % logbackVersion,
+      "ch.qos.logback"     % "logback-classic"                 % logbackClassicVersion,
       "dev.zio"           %% "zio-json"                        % zioJsonVersion,
       "dev.zio"           %% "zio-test"                        % zioVersion                 % Test,
       "dev.zio"           %% "zio-test-sbt"                    % zioVersion                 % Test,
       "dev.zio"           %% "zio-test-junit"                  % zioVersion                 % Test,
       "dev.zio"           %% "zio-mock"                        % zioMockVersion             % Test,
-      "com.dimafeng"      %% "testcontainers-scala-postgresql" % testcontainersScalaVersion % Test,
-      "org.testcontainers" % "testcontainers"                  % testcontainersVersion      % Test,
-      "org.testcontainers" % "database-commons"                % testcontainersVersion      % Test,
-      "org.testcontainers" % "postgresql"                      % testcontainersVersion      % Test,
-      "org.testcontainers" % "jdbc"                            % testcontainersVersion      % Test,
+      "com.dimafeng"      %% "testcontainers-scala-postgresql" % testContainersVersion      % Test,
       "dev.zio"           %% "zio-test-magnolia"               % zioVersion                 % Test,
     ),
     testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework")),
