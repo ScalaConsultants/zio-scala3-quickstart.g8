@@ -26,7 +26,5 @@ final class DataSourceBuilderLive(
 object DataSourceBuilderLive:
   val layer: ZLayer[PostgreSQLContainer, Nothing, DataSourceBuilder] =
     ZLayer(
-      ZIO.service[PostgreSQLContainer].map(container => 
-        DataSourceBuilderLive(container)
-      )
+      ZIO.service[PostgreSQLContainer].map(container => DataSourceBuilderLive(container))
     )
