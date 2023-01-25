@@ -35,9 +35,9 @@ object HttpRoutes:
     case req @ Method.POST -> !! / "items" =>
       (for
         body <- entity[CreateItem](req)
-          .absolve
-          .tapError(_ => ZIO.logInfo(s"Unparseable body"))
-        id <- addItem(body.description)
+                  .absolve
+                  .tapError(_ => ZIO.logInfo(s"Unparseable body"))
+        id   <- addItem(body.description)
       yield GetItem(id.value, body.description)).either.map {
         case Right(created) =>
           Response(
@@ -45,15 +45,15 @@ object HttpRoutes:
             Headers(HeaderNames.contentType, HeaderValues.applicationJson),
             HttpData.fromString(created.toJson),
           )
-        case Left(_) => Response.status(Status.BadRequest)
+        case Left(_)        => Response.status(Status.BadRequest)
       }
 
     case req @ Method.PUT -> !! / "items" / id =>
       (for
         update <- entity[UpdateItem](req)
-          .absolve
-          .tapError(_ => ZIO.logInfo(s"Unparseable body "))
-        _ <- updateItem(ItemId(id.toLong), update.description)
+                    .absolve
+                    .tapError(_ => ZIO.logInfo(s"Unparseable body "))
+        _      <- updateItem(ItemId(id.toLong), update.description)
       yield ()).either.map {
         case Left(_)  => Response.status(Status.BadRequest)
         case Right(_) => Response.ok
