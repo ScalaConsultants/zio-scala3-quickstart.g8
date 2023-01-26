@@ -8,12 +8,16 @@ import zhttp.service.server.ServerChannelFactory
 import zio._
 import zio.config._
 import zio.stream._
+import zio.logging.LogFormat
+import zio.logging.backend.SLF4J
 import $package$.api._
 import $package$.config.Configuration._
 import $package$.repo._
 import $package$.service._
 
 object Main extends ZIOAppDefault:
+
+  override val bootstrap: ULayer[Unit] = Runtime.removeDefaultLoggers >>> SLF4J.slf4j
 
   private val dataSourceLayer = Quill.DataSource.fromPrefix("postgres-db")
 
