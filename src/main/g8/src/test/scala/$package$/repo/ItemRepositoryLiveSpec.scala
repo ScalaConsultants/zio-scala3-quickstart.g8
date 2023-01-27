@@ -15,7 +15,7 @@ object ItemRepositoryLiveSpec extends ZIOSpecDefault:
 
   val dataSourceLayer = ZLayer(ZIO.service[DataSourceBuilder].map(_.dataSource))
 
-  val postgresLayer = Quill.Postgres.fromNamingStrategy(PluralizedTableNames)
+  val postgresLayer = Quill.Postgres.fromNamingStrategy (PluralizedTableNames)
 
   val repoLayer = ItemRepositoryLive.layer
 
@@ -58,5 +58,5 @@ object ItemRepositoryLiveSpec extends ZIOSpecDefault:
       DataSourceBuilderLive.layer,
       dataSourceLayer,
       postgresLayer,
-      repoLayer,
+      repoLayer
     ) @@ sequential
