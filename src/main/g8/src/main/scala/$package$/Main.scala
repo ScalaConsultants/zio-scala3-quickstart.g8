@@ -25,7 +25,7 @@ object Main extends ZIOAppDefault:
 
   private val repoLayer = ItemRepositoryLive.layer
 
-  private val itemServiceLayer = ItemServiceLive.layer
+  private val itemServiceLayer        = ItemServiceLive.layer
   private val healthCheckServiceLayer = HealthCheckServiceLive.layer
 
   val routes = HttpRoutes.app ++ HealthCheckRoutes.app
@@ -43,5 +43,5 @@ object Main extends ZIOAppDefault:
       itemServiceLayer,
       repoLayer,
       postgresLayer,
-      dataSourceLayer
+      dataSourceLayer,
     )
