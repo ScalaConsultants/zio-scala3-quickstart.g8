@@ -15,8 +15,11 @@ final class InMemoryItemRepository(
       _      <- dataRef.update(map => map + (id -> Item(id, description)))
     } yield id
 
-  def delete(id: ItemId): IO[RepositoryError, Unit] =
-    dataRef.update(map => map - id)
+  def delete(id: ItemId): IO[RepositoryError, Long] =
+    dataRef.modify { map =>
+      if (!map.contains(id)) (0L, map)
+      else (1L, map.removed(id))
+    }
 
   def getAll(): IO[RepositoryError, List[Item]] =
     for {
@@ -28,13 +31,11 @@ final class InMemoryItemRepository(
       values <- dataRef.get
     } yield values.get(id)
 
-  def getByIds(ids: Set[ItemId]): IO[RepositoryError, List[Item]] =
-    for {
-      values <- dataRef.get
-    } yield values.filter(id => ids.contains(id._1)).view.values.toList
-
-  def update(item: Item): IO[RepositoryError, Unit] =
-    dataRef.update(map => map + (item.id -> item))
+  def update(item: Item): IO[RepositoryError, Option[Unit]] =
+    dataRef.modify { map =>
+      if (!map.contains(item.id)) (None, map)
+      else (Some(()), map.updated(item.id, item))
+    }
 
 object InMemoryItemRepository:
   val layer: ZLayer[Random, Nothing, ItemRepository] =
