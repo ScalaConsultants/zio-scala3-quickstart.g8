@@ -2,24 +2,23 @@ package $package$.repo
 
 import zio._
 import $package$.domain._
-import $package$.repo.RepositoryError
 
 trait ItemRepository:
   def add(description: String): IO[RepositoryError, ItemId]
 
-  def delete(id: ItemId): IO[RepositoryError, Unit]
+  def delete(id: ItemId): IO[RepositoryError, Long]
 
   def getAll(): IO[RepositoryError, List[Item]]
 
   def getById(id: ItemId): IO[RepositoryError, Option[Item]]
 
-  def update(item: Item): IO[RepositoryError, Unit]
+  def update(item: Item): IO[RepositoryError, Option[Unit]]
 
 object ItemRepository:
   def add(description: String): ZIO[ItemRepository, RepositoryError, ItemId] =
     ZIO.serviceWithZIO[ItemRepository](_.add(description))
 
-  def delete(id: ItemId): ZIO[ItemRepository, RepositoryError, Unit] =
+  def delete(id: ItemId): ZIO[ItemRepository, RepositoryError, Long] =
     ZIO.serviceWithZIO[ItemRepository](_.delete(id))
 
   def getAll(): ZIO[ItemRepository, RepositoryError, List[Item]] =
@@ -28,5 +27,5 @@ object ItemRepository:
   def getById(id: ItemId): ZIO[ItemRepository, RepositoryError, Option[Item]] =
     ZIO.serviceWithZIO[ItemRepository](_.getById(id))
 
-  def update(item: Item): ZIO[ItemRepository, RepositoryError, Unit] =
+  def update(item: Item): ZIO[ItemRepository, RepositoryError, Option[Unit]] =
     ZIO.serviceWithZIO[ItemRepository](_.update(item))
