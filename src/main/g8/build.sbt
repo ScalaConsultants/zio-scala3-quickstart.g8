@@ -6,7 +6,7 @@ val logbackClassicVersion = "1.4.4"
 val postgresqlVersion     = "42.5.0"
 val testContainersVersion = "0.40.11"
 val zioMockVersion        = "1.0.0-RC8"
-val zioHttpVersion        = "2.0.0-RC10"
+val zioHttpVersion        = "2.0.0-RC11"
 val quillVersion          = "4.6.0"
 
 lazy val root = (project in file("."))
