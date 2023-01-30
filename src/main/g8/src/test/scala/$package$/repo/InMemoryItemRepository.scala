@@ -5,41 +5,42 @@ import $package$.domain._
 
 final class InMemoryItemRepository(
     random: Random,
-    dataRef: Ref[Map[ItemId, Item]],
+    storeRef: Ref[Map[ItemId, ItemData]],
   ) extends ItemRepository:
 
-  def add(description: String): IO[RepositoryError, ItemId] =
+  override def add(data: ItemData): IO[RepositoryError, ItemId] =
     for {
       itemId <- random.nextLong.map(_.abs)
       id      = ItemId(itemId)
-      _      <- dataRef.update(map => map + (id -> Item(id, description)))
+      _      <- storeRef.update(store => store + (id -> data))
     } yield id
 
-  def delete(id: ItemId): IO[RepositoryError, Long] =
-    dataRef.modify { map =>
-      if (!map.contains(id)) (0L, map)
-      else (1L, map.removed(id))
+  override def delete(id: ItemId): IO[RepositoryError, Long] =
+    storeRef.modify { store =>
+      if (!store.contains(id)) (0L, store)
+      else (1L, store.removed(id))
     }
 
-  def getAll(): IO[RepositoryError, List[Item]] =
-    for {
-      itemsMap <- dataRef.get
-    } yield itemsMap.view.values.toList
+  override def getAll(): IO[RepositoryError, List[Item]] =
+    storeRef.get.map { store =>
+      store.toList.map(kv => Item.withData(kv._1, kv._2))
+    }
 
-  def getById(id: ItemId): IO[RepositoryError, Option[Item]] =
+  override def getById(id: ItemId): IO[RepositoryError, Option[Item]] =
     for {
-      values <- dataRef.get
-    } yield values.get(id)
+      store    <- storeRef.get
+      maybeItem = store.get(id).map(data => Item.withData(id, data))
+    } yield maybeItem
 
-  def update(item: Item): IO[RepositoryError, Option[Unit]] =
-    dataRef.modify { map =>
-      if (!map.contains(item.id)) (None, map)
-      else (Some(()), map.updated(item.id, item))
+  override def update(id: ItemId, data: ItemData): IO[RepositoryError, Option[Unit]] =
+    storeRef.modify { store =>
+      if (!store.contains(id)) (None, store)
+      else (Some(()), store.updated(id, data))
     }
 
 object InMemoryItemRepository:
   val layer: ZLayer[Random, Nothing, ItemRepository] =
     ZLayer(for {
-      random  <- ZIO.service[Random]
-      dataRef <- Ref.make(Map.empty[ItemId, Item])
-    } yield InMemoryItemRepository(random, dataRef))
+      random   <- ZIO.service[Random]
+      storeRef <- Ref.make(Map.empty[ItemId, ItemData])
+    } yield InMemoryItemRepository(random, storeRef))

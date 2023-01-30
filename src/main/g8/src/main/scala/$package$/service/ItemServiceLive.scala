@@ -6,32 +6,40 @@ import $package$.domain._
 import $package$.repo._
 
 final class ItemServiceLive(repo: ItemRepository) extends ItemService:
-  def addItem(description: String): IO[DomainError, ItemId] =
-    repo.add(description)
+  override def addItem(name: String, price: BigDecimal): IO[DomainError, ItemId] =
+    repo.add(ItemData(name, price))
 
-  def deleteItem(id: ItemId): IO[DomainError, Long] =
+  override def deleteItem(id: ItemId): IO[DomainError, Long] =
     repo.delete(id)
 
-  def getAllItems(): IO[DomainError, List[Item]] =
+  override def getAllItems(): IO[DomainError, List[Item]] =
     repo.getAll()
 
-  def getItemById(id: ItemId): IO[DomainError, Option[Item]] =
+  override def getItemById(id: ItemId): IO[DomainError, Option[Item]] =
     repo.getById(id)
 
-  def updateItem(id: ItemId, description: String): IO[DomainError, Option[Item]] =
+  override def updateItem(
+      id: ItemId,
+      name: String,
+      price: BigDecimal,
+    ): IO[DomainError, Option[Item]] =
     for {
-      item         <- ZIO.succeed(Item(id, description))
-      maybeUpdated <- repo.update(item)
-    } yield maybeUpdated.map(_ => item)
+      data         <- ZIO.succeed(ItemData(name, price))
+      maybeUpdated <- repo.update(id, data)
+    } yield maybeUpdated.map(_ => Item.withData(id, data))
 
-  def partialUpdateItem(id: ItemId, description: Option[String]): IO[DomainError, Option[Item]] =
+  override def partialUpdateItem(
+      id: ItemId,
+      name: Option[String],
+      price: Option[BigDecimal],
+    ): IO[DomainError, Option[Item]] =
     repo.getById(id).flatMap {
       case None              => ZIO.succeed(None)
       case Some(currentItem) =>
-        val nextItem = Item(id, description.getOrElse(currentItem.description))
+        val data = ItemData(name.getOrElse(currentItem.name), price.getOrElse(currentItem.price))
         repo
-          .update(nextItem)
-          .map(_ => Some(nextItem))
+          .update(id, data)
+          .map(_ => Some(Item.withData(id, data)))
     }
 
 object ItemServiceLive:

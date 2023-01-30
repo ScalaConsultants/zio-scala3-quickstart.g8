@@ -46,8 +46,8 @@ object HttpRoutes extends JsonSupport:
       val effect: ZIO[ItemService, DomainError, Item] =
         for {
           createItem <- req.jsonBodyAs[CreateItemRequest]
-          itemId     <- ItemService.addItem(createItem.description)
-        } yield Item(itemId, createItem.description)
+          itemId     <- ItemService.addItem(createItem.name, createItem.price)
+        } yield Item(itemId, createItem.name, createItem.price)
 
       effect.foldZIO(Utils.handleError, _.toResponseZIO(Status.Created))
 
@@ -56,7 +56,7 @@ object HttpRoutes extends JsonSupport:
         for {
           id         <- Utils.extractLong(itemId)
           updateItem <- req.jsonBodyAs[UpdateItemRequest]
-          maybeItem  <- ItemService.updateItem(ItemId(id), updateItem.description)
+          maybeItem  <- ItemService.updateItem(ItemId(id), updateItem.name, updateItem.price)
           item       <- maybeItem
                           .map(ZIO.succeed(_))
                           .getOrElse(ZIO.fail(NotFoundError))
@@ -69,7 +69,11 @@ object HttpRoutes extends JsonSupport:
         for {
           id                <- Utils.extractLong(itemId)
           partialUpdateItem <- req.jsonBodyAs[PartialUpdateItemRequest]
-          maybeItem         <- ItemService.partialUpdateItem(ItemId(id), partialUpdateItem.description)
+          maybeItem         <- ItemService.partialUpdateItem(
+                                 id = ItemId(id),
+                                 name = partialUpdateItem.name,
+                                 price = partialUpdateItem.price,
+                               )
           item              <- maybeItem
                                  .map(ZIO.succeed(_))
                                  .getOrElse(ZIO.fail(NotFoundError))

@@ -4,7 +4,7 @@ import zio._
 import $package$.domain._
 
 trait ItemService:
-  def addItem(description: String): IO[DomainError, ItemId]
+  def addItem(name: String, price: BigDecimal): IO[DomainError, ItemId]
 
   def deleteItem(id: ItemId): IO[DomainError, Long]
 
@@ -12,13 +12,21 @@ trait ItemService:
 
   def getItemById(id: ItemId): IO[DomainError, Option[Item]]
 
-  def updateItem(id: ItemId, description: String): IO[DomainError, Option[Item]]
+  def updateItem(
+      id: ItemId,
+      name: String,
+      price: BigDecimal,
+    ): IO[DomainError, Option[Item]]
 
-  def partialUpdateItem(id: ItemId, description: Option[String]): IO[DomainError, Option[Item]]
+  def partialUpdateItem(
+      id: ItemId,
+      name: Option[String],
+      price: Option[BigDecimal],
+    ): IO[DomainError, Option[Item]]
 
 object ItemService:
-  def addItem(description: String): ZIO[ItemService, DomainError, ItemId] =
-    ZIO.serviceWithZIO[ItemService](_.addItem(description))
+  def addItem(name: String, price: BigDecimal): ZIO[ItemService, DomainError, ItemId] =
+    ZIO.serviceWithZIO[ItemService](_.addItem(name, price))
 
   def deleteItem(id: ItemId): ZIO[ItemService, DomainError, Long] =
     ZIO.serviceWithZIO[ItemService](_.deleteItem(id))
@@ -31,9 +39,14 @@ object ItemService:
 
   def updateItem(
       id: ItemId,
-      description: String,
+      name: String,
+      price: BigDecimal,
     ): ZIO[ItemService, DomainError, Option[Item]] =
-    ZIO.serviceWithZIO[ItemService](_.updateItem(id, description))
+    ZIO.serviceWithZIO[ItemService](_.updateItem(id, name, price))
 
-  def partialUpdateItem(id: ItemId, description: Option[String]): ZIO[ItemService, DomainError, Option[Item]] =
-    ZIO.serviceWithZIO[ItemService](_.partialUpdateItem(id, description))
+  def partialUpdateItem(
+      id: ItemId,
+      name: Option[String],
+      price: Option[BigDecimal],
+    ): ZIO[ItemService, DomainError, Option[Item]] =
+    ZIO.serviceWithZIO[ItemService](_.partialUpdateItem(id, name, price))

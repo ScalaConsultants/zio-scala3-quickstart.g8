@@ -16,49 +16,71 @@ final class ItemRepositoryLive(quill: Quill.Postgres[PluralizedTableNames]) exte
     querySchema[Item]("items")
   }
 
-  // TODO return generated ID with the use of "returningGenerated" method
-  // issue opened https://github.com/getquill/protoquill/issues/22
-  def add(description: String): IO[RepositoryError, ItemId] =
-    transaction {
-      for {
-        _          <- run(
-                        quote {
-                          items.insert(_.description -> lift(description)).returning(_.id)
-                        }
-                      )
-        result     <- run(
-                        quote {
-                          items.filter(_.description == lift(description)).map(_.id)
-                        }
-                      )
-        generatedId = result.headOption.fold(0L)(_.value)
-      } yield ItemId(generatedId)
+  override def add(data: ItemData): IO[RepositoryError, ItemId] =
+    val effect: IO[SQLException, ItemId] = run {
+      quote {
+        items
+          .insertValue(lift(Item.withData(ItemId(0), data)))
+          .returningGenerated(_.id)
+      }
     }
-      .mapError(RepositoryError(_))
 
-  def delete(id: ItemId): IO[RepositoryError, Long] =
-    run(quote(items.filter(i => i.id == lift(id)).delete))
-      .mapError(RepositoryError(_))
+    effect
+      .either
+      .resurrect
+      .refineOrDie {
+        case e: NullPointerException => RepositoryError(e)
+      }
+      .flatMap {
+        case Left(e: SQLException) => ZIO.fail(RepositoryError(e))
+        case Right(itemId: ItemId) => ZIO.succeed(itemId)
+      }
 
-  def getAll(): IO[RepositoryError, List[Item]] =
-    run(quote {
-      items
-    })
-      .mapError(RepositoryError(_))
+  override def delete(id: ItemId): IO[RepositoryError, Long] =
+    val effect: IO[SQLException, Long] = run {
+      quote {
+        items.filter(i => i.id == lift(id)).delete
+      }
+    }
 
-  def getById(id: ItemId): IO[RepositoryError, Option[Item]] =
-    run(quote {
-      items.filter(_.id == lift(id))
-    })
+    effect.refineOrDie {
+      case e: SQLException => RepositoryError(e)
+    }
+
+  override def getAll(): IO[RepositoryError, List[Item]] =
+    val effect: IO[SQLException, List[Item]] = run {
+      quote {
+        items
+      }
+    }
+
+    effect.refineOrDie {
+      case e: SQLException => RepositoryError(e)
+    }
+
+  override def getById(id: ItemId): IO[RepositoryError, Option[Item]] =
+    val effect: IO[SQLException, List[Item]] = run {
+      quote {
+        items.filter(_.id == lift(id))
+      }
+    }
+
+    effect
       .map(_.headOption)
-      .mapError(RepositoryError(_))
+      .refineOrDie {
+        case e: SQLException => RepositoryError(e)
+      }
 
-  def update(item: Item): IO[RepositoryError, Option[Unit]] =
-    run(quote {
-      items
-        .filter(i => i.id == lift(item.id))
-        .update(_.description -> lift(item.description))
-    })
+  override def update(itemId: ItemId, data: ItemData): IO[RepositoryError, Option[Unit]] =
+    val effect: IO[SQLException, Long] = run {
+      quote {
+        items
+          .filter(item => item.id == lift(itemId))
+          .updateValue(lift(Item.withData(itemId, data)))
+      }
+    }
+
+    effect
       .map(n => if (n > 0) Some(()) else None)
       .refineOrDie {
         case e: SQLException => RepositoryError(e)
