@@ -5,9 +5,8 @@ import zio.mock.Expectation._
 import zio.stream._
 import zio.test._
 import zio.test.Assertion._
+import $package$.application.ItemService._
 import $package$.domain._
-import $package$.service._
-import $package$.service.ItemService._
 import $package$.infrastructure._
 
 object ItemServiceSpec extends ZIOSpecDefault:
@@ -37,7 +36,7 @@ object ItemServiceSpec extends ZIOSpecDefault:
         found   <- assertZIO(getItemById(ItemId(123)))(isSome(equalTo(exampleItem)))
         missing <- assertZIO(getItemById(ItemId(124)))(isNone)
       } yield found && missing
-    }.provide(getItemMock, ItemServiceLive.layer),
+    }.provide(getItemMock),
     test("update item") {
       for {
         found   <- assertZIO(updateItem(ItemId(123), "foo", BigDecimal(123)))(
@@ -45,5 +44,5 @@ object ItemServiceSpec extends ZIOSpecDefault:
                    )
         missing <- assertZIO(updateItem(ItemId(124), "bar", BigDecimal(124)))(isNone)
       } yield found && missing
-    }.provide(updateMock, ItemServiceLive.layer),
+    }.provide(updateMock),
   )
