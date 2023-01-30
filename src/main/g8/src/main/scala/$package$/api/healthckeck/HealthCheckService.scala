@@ -1,8 +1,6 @@
-package $package$.service
+package $package$.api.healthcheck
 
 import zio._
-
-import $package$.domain.DbStatus
 
 trait HealthCheckService:
   def check: UIO[DbStatus]

@@ -11,6 +11,7 @@ import zio.stream._
 import zio.logging.LogFormat
 import zio.logging.backend.SLF4J
 import $package$.api._
+import $package$.api.healthcheck._
 import $package$.config.Configuration._
 import $package$.infrastructure._
 import $package$.service._

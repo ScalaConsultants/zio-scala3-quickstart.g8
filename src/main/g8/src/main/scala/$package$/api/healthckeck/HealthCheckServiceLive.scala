@@ -1,12 +1,10 @@
-package $package$.service
+package $package$.api.healthcheck
 
 import io.getquill.*
 import io.getquill.PluralizedTableNames
 import io.getquill.jdbczio.Quill
 
 import zio.*
-
-import $package$.domain.DbStatus
 
 final class HealthCheckServiceLive(quill: Quill.Postgres[PluralizedTableNames]) extends HealthCheckService {
 
