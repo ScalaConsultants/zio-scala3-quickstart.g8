@@ -1,4 +1,4 @@
-package $package$.repo
+package $package$.infrastructure
 
 import zio._
 import $package$.domain._

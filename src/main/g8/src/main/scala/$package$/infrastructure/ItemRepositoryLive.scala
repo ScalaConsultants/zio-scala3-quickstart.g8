@@ -1,4 +1,4 @@
-package $package$.repo
+package $package$.infrastructure
 
 import io.getquill._
 import io.getquill.jdbczio.Quill

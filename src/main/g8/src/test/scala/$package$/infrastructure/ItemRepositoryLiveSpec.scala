@@ -1,4 +1,4 @@
-package $package$.repo
+package $package$.infrastructure
 
 import io.getquill.PluralizedTableNames
 import io.getquill.jdbczio.Quill
@@ -6,8 +6,8 @@ import zio.test._
 import zio.test.Assertion._
 import zio.test.TestAspect._
 import zio._
-import $package$.repo.postgresql._
 import $package$.domain._
+import $package$.infrastructure.postgresql._
 
 object ItemRepositoryLiveSpec extends ZIOSpecDefault:
 

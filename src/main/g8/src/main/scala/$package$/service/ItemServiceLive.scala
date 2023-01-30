@@ -3,7 +3,6 @@ package $package$.service
 import zio._
 import zio.stream._
 import $package$.domain._
-import $package$.repo._
 
 final class ItemServiceLive(repo: ItemRepository) extends ItemService:
   override def addItem(name: String, price: BigDecimal): IO[DomainError, ItemId] =

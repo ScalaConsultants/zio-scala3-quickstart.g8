@@ -1,7 +1,6 @@
-package $package$.repo
+package $package$.domain
 
 import zio._
-import $package$.domain._
 
 trait ItemRepository:
   def add(data: ItemData): IO[RepositoryError, ItemId]

@@ -1,4 +1,4 @@
-package $package$.repo.postgresql
+package $package$.infrastructure.postgresql
 
 import com.dimafeng.testcontainers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
