@@ -8,7 +8,7 @@ import zio.test.Assertion._
 import $package$.domain._
 import $package$.service._
 import $package$.service.ItemService._
-import $package$.repo._
+import $package$.infrastructure._
 
 object ItemServiceSpec extends ZIOSpecDefault:
 

@@ -12,7 +12,7 @@ import zio.logging.LogFormat
 import zio.logging.backend.SLF4J
 import $package$.api._
 import $package$.config.Configuration._
-import $package$.repo._
+import $package$.infrastructure._
 import $package$.service._
 
 object Main extends ZIOAppDefault:
