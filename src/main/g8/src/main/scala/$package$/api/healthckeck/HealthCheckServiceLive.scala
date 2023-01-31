@@ -17,7 +17,7 @@ final class HealthCheckServiceLive(quill: Quill.Postgres[PluralizedTableNames]) 
   }
     .fold(
       _ => DbStatus(false),
-      _ => DbStatus(true)
+      _ => DbStatus(true),
     )
 
 }
