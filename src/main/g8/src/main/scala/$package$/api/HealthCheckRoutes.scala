@@ -3,7 +3,7 @@ package $package$.api
 import zhttp.http.*
 import zio.*
 
-import $package$.service.HealthCheckService
+import $package$.api.healthcheck.HealthCheckService
 
 object HealthCheckRoutes:
 

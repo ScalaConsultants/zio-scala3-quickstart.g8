@@ -4,8 +4,7 @@ import zhttp.http.*
 import zio.test.*
 import zio.test.Assertion.*
 
-import $package$.service.HealthCheckServiceTest
-import $package$.api.HealthCheckRoutes
+import $package$.api.healthcheck.HealthCheckServiceTest
 
 object HealthCheckRoutesSpec extends ZIOSpecDefault:
 

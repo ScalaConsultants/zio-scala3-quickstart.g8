@@ -11,9 +11,9 @@ import zio.stream._
 import zio.logging.LogFormat
 import zio.logging.backend.SLF4J
 import $package$.api._
+import $package$.api.healthcheck._
 import $package$.config.Configuration._
-import $package$.repo._
-import $package$.service._
+import $package$.infrastructure._
 
 object Main extends ZIOAppDefault:
 
@@ -25,7 +25,6 @@ object Main extends ZIOAppDefault:
 
   private val repoLayer = ItemRepositoryLive.layer
 
-  private val itemServiceLayer = ItemServiceLive.layer
   private val healthCheckServiceLayer = HealthCheckServiceLive.layer
 
   val routes = HttpRoutes.app ++ HealthCheckRoutes.app
@@ -40,7 +39,6 @@ object Main extends ZIOAppDefault:
     program.provide(
       healthCheckServiceLayer,
       ServerConfig.layer,
-      itemServiceLayer,
       repoLayer,
       postgresLayer,
       dataSourceLayer

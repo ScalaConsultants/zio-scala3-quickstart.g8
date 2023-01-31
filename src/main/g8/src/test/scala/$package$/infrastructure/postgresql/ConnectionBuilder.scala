@@ -1,4 +1,4 @@
-package $package$.repo.postgresql
+package $package$.infrastructure.postgresql
 
 import java.sql.{ Connection, DriverManager, SQLException }
 import java.util.Properties
