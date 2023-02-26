@@ -8,7 +8,9 @@ import $package$.domain._
 import java.sql.SQLException
 import javax.sql.DataSource
 
-final class ItemRepositoryLive(quill: Quill.Postgres[PluralizedTableNames]) extends ItemRepository:
+final class ItemRepositoryLive(
+    quill: Quill.Postgres[PluralizedTableNames]
+  ) extends ItemRepository:
 
   import quill.*
 
@@ -16,7 +18,9 @@ final class ItemRepositoryLive(quill: Quill.Postgres[PluralizedTableNames]) exte
     querySchema[Item]("items")
   }
 
-  override def add(data: ItemData): IO[RepositoryError, ItemId] =
+  override def add(
+      data: ItemData
+    ): IO[RepositoryError, ItemId] =
     val effect: IO[SQLException, ItemId] = run {
       quote {
         items
@@ -36,7 +40,9 @@ final class ItemRepositoryLive(quill: Quill.Postgres[PluralizedTableNames]) exte
         case Right(itemId: ItemId) => ZIO.succeed(itemId)
       }
 
-  override def delete(id: ItemId): IO[RepositoryError, Long] =
+  override def delete(
+      id: ItemId
+    ): IO[RepositoryError, Long] =
     val effect: IO[SQLException, Long] = run {
       quote {
         items.filter(i => i.id == lift(id)).delete
@@ -47,7 +53,8 @@ final class ItemRepositoryLive(quill: Quill.Postgres[PluralizedTableNames]) exte
       case e: SQLException => RepositoryError(e)
     }
 
-  override def getAll(): IO[RepositoryError, List[Item]] =
+  override def getAll(
+    ): IO[RepositoryError, List[Item]] =
     val effect: IO[SQLException, List[Item]] = run {
       quote {
         items
@@ -58,7 +65,9 @@ final class ItemRepositoryLive(quill: Quill.Postgres[PluralizedTableNames]) exte
       case e: SQLException => RepositoryError(e)
     }
 
-  override def getById(id: ItemId): IO[RepositoryError, Option[Item]] =
+  override def getById(
+      id: ItemId
+    ): IO[RepositoryError, Option[Item]] =
     val effect: IO[SQLException, List[Item]] = run {
       quote {
         items.filter(_.id == lift(id))
@@ -71,7 +80,10 @@ final class ItemRepositoryLive(quill: Quill.Postgres[PluralizedTableNames]) exte
         case e: SQLException => RepositoryError(e)
       }
 
-  override def update(itemId: ItemId, data: ItemData): IO[RepositoryError, Option[Unit]] =
+  override def update(
+      itemId: ItemId,
+      data: ItemData,
+    ): IO[RepositoryError, Option[Unit]] =
     val effect: IO[SQLException, Long] = run {
       quote {
         items

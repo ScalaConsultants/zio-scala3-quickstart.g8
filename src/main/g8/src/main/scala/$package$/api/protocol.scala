@@ -4,9 +4,18 @@ import zio.json._
 
 import $package$.domain.{ Item, ItemId }
 
-final case class UpdateItemRequest(name: String, price: BigDecimal)
-final case class PartialUpdateItemRequest(name: Option[String], price: Option[BigDecimal])
-final case class CreateItemRequest(name: String, price: BigDecimal)
+final case class UpdateItemRequest(
+    name: String,
+    price: BigDecimal,
+  )
+final case class PartialUpdateItemRequest(
+    name: Option[String],
+    price: Option[BigDecimal],
+  )
+final case class CreateItemRequest(
+    name: String,
+    price: BigDecimal,
+  )
 
 trait JsonSupport:
   implicit val itemIdEncoder: JsonEncoder[ItemId] = JsonEncoder[Long].contramap(_.value)

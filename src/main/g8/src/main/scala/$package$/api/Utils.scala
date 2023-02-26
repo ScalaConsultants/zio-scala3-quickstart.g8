@@ -8,13 +8,17 @@ import $package$.api.Extensions._
 
 private[api] object Utils:
 
-  def extractLong(str: String): IO[ValidationError, Long] =
+  def extractLong(
+      str: String
+    ): IO[ValidationError, Long] =
     ZIO
       .attempt(str.toLong)
       .refineToOrDie[NumberFormatException]
       .mapError(err => ValidationError(err.getMessage))
 
-  def handleError(err: DomainError): UIO[Response] = err match {
+  def handleError(
+      err: DomainError
+    ): UIO[Response] = err match {
     case NotFoundError          => ZIO.succeed(Response.status(Status.NotFound))
     case ValidationError(msg)   => msg.toResponseZIO(Status.BadRequest)
     case RepositoryError(cause) =>

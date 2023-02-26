@@ -6,16 +6,24 @@ import $package$.domain._
 
 object ItemService:
 
-  def addItem(name: String, price: BigDecimal): ZIO[ItemRepository, DomainError, ItemId] =
+  def addItem(
+      name: String,
+      price: BigDecimal,
+    ): ZIO[ItemRepository, DomainError, ItemId] =
     ZIO.serviceWithZIO[ItemRepository](_.add(ItemData(name, price)))
 
-  def deleteItem(id: ItemId): ZIO[ItemRepository, DomainError, Long] =
+  def deleteItem(
+      id: ItemId
+    ): ZIO[ItemRepository, DomainError, Long] =
     ZIO.serviceWithZIO[ItemRepository](_.delete(id))
 
-  def getAllItems(): ZIO[ItemRepository, DomainError, List[Item]] =
+  def getAllItems(
+    ): ZIO[ItemRepository, DomainError, List[Item]] =
     ZIO.serviceWithZIO[ItemRepository](_.getAll())
 
-  def getItemById(id: ItemId): ZIO[ItemRepository, DomainError, Option[Item]] =
+  def getItemById(
+      id: ItemId
+    ): ZIO[ItemRepository, DomainError, Option[Item]] =
     ZIO.serviceWithZIO[ItemRepository](_.getById(id))
 
   def updateItem(
@@ -37,6 +45,6 @@ object ItemService:
     (for {
       repo        <- ZIO.service[ItemRepository]
       currentItem <- repo.getById(id).some
-      data        = ItemData(name.getOrElse(currentItem.name), price.getOrElse(currentItem.price))
+      data         = ItemData(name.getOrElse(currentItem.name), price.getOrElse(currentItem.price))
       _           <- repo.update(id, data).some
     } yield Item.withData(id, data)).unsome

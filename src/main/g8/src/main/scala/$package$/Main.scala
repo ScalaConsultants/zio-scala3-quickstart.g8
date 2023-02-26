@@ -41,5 +41,5 @@ object Main extends ZIOAppDefault:
       ServerConfig.layer,
       repoLayer,
       postgresLayer,
-      dataSourceLayer
+      dataSourceLayer,
     )

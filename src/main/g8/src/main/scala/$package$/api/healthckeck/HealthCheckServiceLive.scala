@@ -6,7 +6,9 @@ import io.getquill.jdbczio.Quill
 
 import zio.*
 
-final class HealthCheckServiceLive(quill: Quill.Postgres[PluralizedTableNames]) extends HealthCheckService {
+final class HealthCheckServiceLive(
+    quill: Quill.Postgres[PluralizedTableNames]
+  ) extends HealthCheckService {
 
   import quill.*
 
@@ -17,7 +19,7 @@ final class HealthCheckServiceLive(quill: Quill.Postgres[PluralizedTableNames]) 
   }
     .fold(
       _ => DbStatus(false),
-      _ => DbStatus(true)
+      _ => DbStatus(true),
     )
 
 }

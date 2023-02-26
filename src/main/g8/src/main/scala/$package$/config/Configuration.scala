@@ -10,7 +10,9 @@ import $package$.config.Configuration.ServerConfig
 
 object Configuration:
 
-  final case class ServerConfig(port: Int)
+  final case class ServerConfig(
+      port: Int
+    )
 
   object ServerConfig:
 

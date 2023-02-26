@@ -8,7 +8,9 @@ import $package$.domain.ValidationError
 
 private[api] object Extensions:
 
-  implicit class RichRequest(val request: Request) extends AnyVal {
+  implicit class RichRequest(
+      val request: Request
+    ) extends AnyVal {
     def jsonBodyAs[T: JsonDecoder]: IO[ValidationError, T] =
       for {
         body: String <- request.bodyAsString.orDie
@@ -16,17 +18,24 @@ private[api] object Extensions:
       } yield t
   }
 
-  implicit class RichDomain[T](val data: T) extends AnyVal {
+  implicit class RichDomain[T](
+      val data: T
+    ) extends AnyVal {
 
     def toResponseZIO(implicit ev: JsonEncoder[T]): UIO[Response] = toResponseZIO(Status.Ok)
 
-    def toResponseZIO(status: Status)(implicit ev: JsonEncoder[T]): UIO[Response] = ZIO.succeed {
+    def toResponseZIO(
+        status: Status
+      )(implicit ev: JsonEncoder[T]
+      ): UIO[Response] = ZIO.succeed {
       Response.json(data.toJson).setStatus(status)
     }
 
     def toEmptyResponseZIO: UIO[Response] = toEmptyResponseZIO(Status.NoContent)
 
-    def toEmptyResponseZIO(status: Status): UIO[Response] = ZIO.succeed(Response.status(status))
+    def toEmptyResponseZIO(
+        status: Status
+      ): UIO[Response] = ZIO.succeed(Response.status(status))
   }
 
 end Extensions
