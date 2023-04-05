@@ -1,7 +1,7 @@
 package $package$
 
 import io.getquill.jdbczio.Quill
-import io.getquill.PluralizedTableNames
+import io.getquill.Literal
 import zhttp.http._
 import zhttp.service._
 import zhttp.service.server.ServerChannelFactory
@@ -15,13 +15,13 @@ import $package$.api.healthcheck._
 import $package$.config.Configuration._
 import $package$.infrastructure._
 
-object Main extends ZIOAppDefault:
+object Boot extends ZIOAppDefault:
 
   override val bootstrap: ULayer[Unit] = Runtime.removeDefaultLoggers >>> SLF4J.slf4j
 
-  private val dataSourceLayer = Quill.DataSource.fromPrefix("postgres-db")
+  private val dataSourceLayer = Quill.DataSource.fromPrefix("db")
 
-  private val postgresLayer = Quill.Postgres.fromNamingStrategy(PluralizedTableNames)
+  private val postgresLayer = Quill.Postgres.fromNamingStrategy(Literal)
 
   private val repoLayer = ItemRepositoryLive.layer
 

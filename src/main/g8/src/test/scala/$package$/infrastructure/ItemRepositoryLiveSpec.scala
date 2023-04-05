@@ -1,6 +1,6 @@
 package $package$.infrastructure
 
-import io.getquill.PluralizedTableNames
+import io.getquill.Literal
 import io.getquill.jdbczio.Quill
 import zio.test._
 import zio.test.Assertion._
@@ -15,7 +15,7 @@ object ItemRepositoryLiveSpec extends ZIOSpecDefault:
 
   val dataSourceLayer = ZLayer(ZIO.service[DataSourceBuilder].map(_.dataSource))
 
-  val postgresLayer = Quill.Postgres.fromNamingStrategy(PluralizedTableNames)
+  val postgresLayer = Quill.Postgres.fromNamingStrategy(Literal)
 
   val repoLayer = ItemRepositoryLive.layer
 
