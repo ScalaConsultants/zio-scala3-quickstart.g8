@@ -8,7 +8,7 @@ import $package$.domain._
 import java.sql.SQLException
 import javax.sql.DataSource
 
-final class ItemRepositoryLive(quill: Quill.Postgres[PluralizedTableNames]) extends ItemRepository:
+final class ItemRepositoryLive(quill: Quill.Postgres[Literal]) extends ItemRepository:
 
   import quill.*
 
@@ -88,8 +88,8 @@ final class ItemRepositoryLive(quill: Quill.Postgres[PluralizedTableNames]) exte
 
 object ItemRepositoryLive:
 
-  val layer: URLayer[Quill.Postgres[PluralizedTableNames], ItemRepository] = ZLayer {
+  val layer: URLayer[Quill.Postgres[Literal], ItemRepository] = ZLayer {
     for {
-      quill <- ZIO.service[Quill.Postgres[PluralizedTableNames]]
+      quill <- ZIO.service[Quill.Postgres[Literal]]
     } yield ItemRepositoryLive(quill)
   }

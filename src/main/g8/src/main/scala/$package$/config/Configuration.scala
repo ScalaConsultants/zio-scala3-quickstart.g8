@@ -15,7 +15,7 @@ object Configuration:
   object ServerConfig:
 
     private val serverConfigDescription =
-      nested("server-config") {
+      nested("api") {
         int("port").default(8090)
       }.to[ServerConfig]
 
