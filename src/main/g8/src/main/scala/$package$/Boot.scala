@@ -1,19 +1,15 @@
 package $package$
 
-import io.getquill.jdbczio.Quill
-import io.getquill.Literal
-import zhttp.http._
-import zhttp.service._
-import zhttp.service.server.ServerChannelFactory
-import zio._
-import zio.config._
-import zio.stream._
-import zio.logging.LogFormat
-import zio.logging.backend.SLF4J
 import $package$.api._
 import $package$.api.healthcheck._
 import $package$.config.Configuration._
 import $package$.infrastructure._
+import io.getquill.jdbczio.Quill
+import io.getquill.Literal
+import zio._
+import zio.config._
+import zio.http.Server
+import zio.logging.backend.SLF4J
 
 object Boot extends ZIOAppDefault:
 
@@ -27,17 +23,19 @@ object Boot extends ZIOAppDefault:
 
   private val healthCheckServiceLayer = HealthCheckServiceLive.layer
 
+  private val serverLayer = 
+    ZLayer.service[ServerConfig].flatMap { cfg =>
+      Server.defaultWithPort(cfg.get.port)
+    }.orDie
+
   val routes = HttpRoutes.app ++ HealthCheckRoutes.app
 
-  val program =
-    for
-      config <- getConfig[ServerConfig]
-      _      <- Server.start(config.port, routes)
-    yield ()
+  private val program = Server.serve(routes)
 
   override val run =
     program.provide(
       healthCheckServiceLayer,
+      serverLayer,
       ServerConfig.layer,
       repoLayer,
       postgresLayer,

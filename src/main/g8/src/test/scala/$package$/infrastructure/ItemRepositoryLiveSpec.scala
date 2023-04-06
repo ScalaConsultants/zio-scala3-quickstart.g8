@@ -1,13 +1,13 @@
 package $package$.infrastructure
 
+import $package$.domain._
+import $package$.infrastructure.postgresql._
 import io.getquill.Literal
 import io.getquill.jdbczio.Quill
+import zio._
 import zio.test._
 import zio.test.Assertion._
 import zio.test.TestAspect._
-import zio._
-import $package$.domain._
-import $package$.infrastructure.postgresql._
 
 object ItemRepositoryLiveSpec extends ZIOSpecDefault:
 

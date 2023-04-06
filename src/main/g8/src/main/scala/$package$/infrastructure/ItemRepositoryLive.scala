@@ -1,12 +1,12 @@
 package $package$.infrastructure
 
+import java.sql.SQLException
+
+import $package$.domain._
 import io.getquill._
 import io.getquill.jdbczio.Quill
 import zio.{ IO, URLayer, ZIO, ZLayer }
-import $package$.domain._
 
-import java.sql.SQLException
-import javax.sql.DataSource
 
 final class ItemRepositoryLive(quill: Quill.Postgres[Literal]) extends ItemRepository:
 

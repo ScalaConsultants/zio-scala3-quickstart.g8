@@ -1,12 +1,12 @@
 package $package$.config
 
+import $package$.config.Configuration.ServerConfig
 import com.typesafe.config.ConfigFactory
 import zio._
 import zio.config._
-import zio.config.ConfigSource._
 import zio.config.ConfigDescriptor._
+import zio.config.ConfigSource._
 import zio.config.typesafe.TypesafeConfigSource
-import $package$.config.Configuration.ServerConfig
 
 object Configuration:
 
