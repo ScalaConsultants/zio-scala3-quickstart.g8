@@ -1,12 +1,12 @@
 package $package$.api.healthcheck
 
 import io.getquill.*
-import io.getquill.PluralizedTableNames
+import io.getquill.Literal
 import io.getquill.jdbczio.Quill
 
 import zio.*
 
-final class HealthCheckServiceLive(quill: Quill.Postgres[PluralizedTableNames]) extends HealthCheckService {
+final class HealthCheckServiceLive(quill: Quill.Postgres[Literal]) extends HealthCheckService {
 
   import quill.*
 
@@ -24,8 +24,8 @@ final class HealthCheckServiceLive(quill: Quill.Postgres[PluralizedTableNames]) 
 
 object HealthCheckServiceLive:
 
-  val layer: URLayer[Quill.Postgres[PluralizedTableNames], HealthCheckServiceLive] = ZLayer {
+  val layer: URLayer[Quill.Postgres[Literal], HealthCheckServiceLive] = ZLayer {
     for {
-      quill <- ZIO.service[Quill.Postgres[PluralizedTableNames]]
+      quill <- ZIO.service[Quill.Postgres[Literal]]
     } yield HealthCheckServiceLive(quill)
   }
