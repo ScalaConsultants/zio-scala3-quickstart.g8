@@ -1,8 +1,6 @@
-package $package$.service
+package $package$.api.healthcheck
 
-import zio.*
-
-import $package$.domain.DbStatus
+import zio._
 
 final class HealthCheckServiceTest extends HealthCheckService:
 

@@ -1,11 +1,10 @@
 package $package$.api
 
-import zhttp.http.*
-import zio.test.*
-import zio.test.Assertion.*
-
-import $package$.service.HealthCheckServiceTest
-import $package$.api.HealthCheckRoutes
+import $package$.api.healthcheck.HealthCheckServiceTest
+import zio.http._
+import zio.http.model.{ Headers, Method, Status }
+import zio.test._
+import zio.test.Assertion._
 
 object HealthCheckRoutesSpec extends ZIOSpecDefault:
 
@@ -13,8 +12,8 @@ object HealthCheckRoutesSpec extends ZIOSpecDefault:
     suite("health check")(
       test("ok status") {
         val actual =
-          HealthCheckRoutes.app(Request(method = Method.GET, url = URL(!! / "healthcheck")))
-        assertZIO(actual)(equalTo(Response(Status.Ok, Headers.empty, HttpData.empty)))
+          HealthCheckRoutes.app.runZIO(Request.get(URL(!! / "healthcheck")))
+        assertZIO(actual)(equalTo(Response(Status.Ok, Headers.empty, Body.empty)))
       }
     )
   )
