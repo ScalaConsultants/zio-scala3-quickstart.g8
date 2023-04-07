@@ -37,6 +37,6 @@ object ItemService:
     (for {
       repo        <- ZIO.service[ItemRepository]
       currentItem <- repo.getById(id).some
-      data         = ItemData(name.getOrElse(currentItem.name), price.getOrElse(currentItem.price))
+      data        = ItemData(name.getOrElse(currentItem.name), price.getOrElse(currentItem.price))
       _           <- repo.update(id, data).some
     } yield Item.withData(id, data)).unsome
