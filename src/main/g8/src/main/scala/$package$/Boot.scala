@@ -23,10 +23,13 @@ object Boot extends ZIOAppDefault:
 
   private val healthCheckServiceLayer = HealthCheckServiceLive.layer
 
-  private val serverLayer = 
-    ZLayer.service[ServerConfig].flatMap { cfg =>
-      Server.defaultWithPort(cfg.get.port)
-    }.orDie
+  private val serverLayer =
+    ZLayer
+      .service[ServerConfig]
+      .flatMap { cfg =>
+        Server.defaultWithPort(cfg.get.port)
+      }
+      .orDie
 
   val routes = HttpRoutes.app ++ HealthCheckRoutes.app
 
@@ -39,5 +42,5 @@ object Boot extends ZIOAppDefault:
       ServerConfig.layer,
       repoLayer,
       postgresLayer,
-      dataSourceLayer
+      dataSourceLayer,
     )

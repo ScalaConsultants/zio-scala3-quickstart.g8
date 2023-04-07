@@ -7,7 +7,6 @@ import io.getquill._
 import io.getquill.jdbczio.Quill
 import zio.{ IO, URLayer, ZIO, ZLayer }
 
-
 final class ItemRepositoryLive(quill: Quill.Postgres[Literal]) extends ItemRepository:
 
   import quill.*

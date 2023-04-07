@@ -19,5 +19,5 @@ object HealthCheckRoutes:
         if (dbStatus.status) Response.ok
         else Response.status(Status.InternalServerError)
       }
-      
+
   }

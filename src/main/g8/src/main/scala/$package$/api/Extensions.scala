@@ -27,5 +27,5 @@ private[api] object Extensions:
     def toEmptyResponseZIO: UIO[Response] = toEmptyResponseZIO(Status.NoContent)
 
     def toEmptyResponseZIO(status: Status): UIO[Response] = ZIO.succeed(Response.status(status))
-    
+
   }
