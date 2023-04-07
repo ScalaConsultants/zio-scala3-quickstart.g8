@@ -1,17 +1,17 @@
 package $package$.api
 
-import zio.*
-import zio.json.*
-import zhttp.http.*
-
 import $package$.domain.ValidationError
+import zio._
+import zio.http._
+import zio.http.model.Status
+import zio.json._
 
 private[api] object Extensions:
 
   implicit class RichRequest(val request: Request) extends AnyVal {
     def jsonBodyAs[T: JsonDecoder]: IO[ValidationError, T] =
       for {
-        body: String <- request.bodyAsString.orDie
+        body: String <- request.body.asString.orDie
         t            <- ZIO.succeed(body.fromJson[T]).absolve.mapError(ValidationError.apply)
       } yield t
   }
@@ -27,6 +27,5 @@ private[api] object Extensions:
     def toEmptyResponseZIO: UIO[Response] = toEmptyResponseZIO(Status.NoContent)
 
     def toEmptyResponseZIO(status: Status): UIO[Response] = ZIO.succeed(Response.status(status))
+    
   }
-
-end Extensions

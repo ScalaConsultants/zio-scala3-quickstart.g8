@@ -1,10 +1,10 @@
 package $package$.api
 
-import zio._
-import zhttp.http._
-
-import $package$.domain._
 import $package$.api.Extensions._
+import $package$.domain._
+import zio._
+import zio.http._
+import zio.http.model.Status
 
 private[api] object Utils:
 
@@ -21,5 +21,3 @@ private[api] object Utils:
       ZIO.logErrorCause(cause.getMessage, Cause.fail(cause)) *>
         "Internal server error, contact system administrator".toResponseZIO(Status.InternalServerError)
   }
-
-end Utils

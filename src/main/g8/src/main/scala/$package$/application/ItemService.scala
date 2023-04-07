@@ -1,8 +1,7 @@
 package $package$.application
 
-import zio._
-import zio.stream._
 import $package$.domain._
+import zio._
 
 object ItemService:
 
