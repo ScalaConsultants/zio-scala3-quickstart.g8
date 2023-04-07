@@ -1,8 +1,8 @@
 package $package$.infrastructure
 
+import $package$.domain._
 import zio._
 import zio.mock._
-import $package$.domain._
 
 object ItemRepoMock extends Mock[ItemRepository]:
   object Add     extends Effect[ItemData, Nothing, ItemId]

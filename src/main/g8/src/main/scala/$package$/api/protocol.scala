@@ -1,8 +1,7 @@
 package $package$.api
 
-import zio.json._
-
 import $package$.domain.{ Item, ItemId }
+import zio.json._
 
 final case class UpdateItemRequest(name: String, price: BigDecimal)
 final case class PartialUpdateItemRequest(name: Option[String], price: Option[BigDecimal])
