@@ -4,7 +4,7 @@ val zioJsonVersion        = "0.5.0"
 val zioConfigVersion      = "3.0.7"
 val logbackClassicVersion = "1.4.4"
 val postgresqlVersion     = "42.5.0"
-val testContainersVersion = "0.40.11"
+val testContainersVersion = "0.40.14"
 val zioMockVersion        = "1.0.0-RC10"
 val zioHttpVersion        = "0.0.5"
 val quillVersion          = "4.6.0"
@@ -47,5 +47,5 @@ lazy val root = (project in file("."))
       "com.dimafeng"      %% "testcontainers-scala-postgresql" % testContainersVersion,
       "dev.zio"           %% "zio-test-magnolia"               % zioVersion,
     ),
-    testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework"))
+    testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework")),
   )
