@@ -3,6 +3,7 @@ package $package$.domain
 import zio._
 
 trait ItemRepository:
+
   def add(data: ItemData): IO[RepositoryError, ItemId]
 
   def delete(id: ItemId): IO[RepositoryError, Long]
@@ -14,6 +15,7 @@ trait ItemRepository:
   def update(itemId: ItemId, data: ItemData): IO[RepositoryError, Option[Unit]]
 
 object ItemRepository:
+
   def add(data: ItemData): ZIO[ItemRepository, RepositoryError, ItemId] =
     ZIO.serviceWithZIO[ItemRepository](_.add(data))
 
