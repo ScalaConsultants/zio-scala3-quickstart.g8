@@ -1,14 +1,14 @@
 package $package$.api
 
-import zhttp.http._
-import zhttp.service._
-import zio._
-import zio.json._
-import $package$.api.Extensions._
-import $package$.domain._
-import $package$.application.ItemService
-
 import java.nio.charset.StandardCharsets
+
+import $package$.api.Extensions._
+import $package$.application.ItemService
+import $package$.domain._
+import zio._
+import zio.http._
+import zio.http.model.{ Method, Status }
+import zio.json._
 
 object HttpRoutes extends JsonSupport:
 

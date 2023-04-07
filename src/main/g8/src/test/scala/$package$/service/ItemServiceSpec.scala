@@ -1,13 +1,13 @@
 package $package$.service
 
+import $package$.application.ItemService._
+import $package$.domain._
+import $package$.infrastructure._
 import zio._
 import zio.mock.Expectation._
 import zio.stream._
 import zio.test._
 import zio.test.Assertion._
-import $package$.application.ItemService._
-import $package$.domain._
-import $package$.infrastructure._
 
 object ItemServiceSpec extends ZIOSpecDefault:
 

@@ -1,7 +1,7 @@
 package $package$.infrastructure
 
-import zio._
 import $package$.domain._
+import zio._
 
 final class InMemoryItemRepository(
     random: Random,

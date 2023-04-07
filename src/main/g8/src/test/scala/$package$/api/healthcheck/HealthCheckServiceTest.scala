@@ -1,6 +1,6 @@
 package $package$.api.healthcheck
 
-import zio.*
+import zio._
 
 final class HealthCheckServiceTest extends HealthCheckService:
 

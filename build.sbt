@@ -1,12 +1,12 @@
 // Dependencies are needed for Scala Steward to check if there are newer versions
-val zioVersion            = "2.0.2"
-val zioJsonVersion        = "0.3.0-RC10"
-val zioConfigVersion      = "3.0.2"
+val zioVersion            = "2.0.10"
+val zioJsonVersion        = "0.5.0"
+val zioConfigVersion      = "3.0.7"
 val logbackClassicVersion = "1.4.6"
 val postgresqlVersion     = "42.5.0"
-val testContainersVersion = "0.40.11"
-val zioMockVersion        = "1.0.0-RC8"
-val zioHttpVersion        = "2.0.0-RC10"
+val testContainersVersion = "0.40.14"
+val zioMockVersion        = "1.0.0-RC10"
+val zioHttpVersion        = "0.0.5"
 val quillVersion          = "4.6.0"
 
 // This build is for this Giter8 template.
@@ -35,7 +35,7 @@ lazy val root = (project in file("."))
       "org.postgresql" % "postgresql"                      % postgresqlVersion,
       "dev.zio"       %% "zio"                             % zioVersion,
       "dev.zio"       %% "zio-streams"                     % zioVersion,
-      "io.d11"        %% "zhttp"                           % zioHttpVersion,
+      "dev.zio"       %% "zio-http"                        % zioHttpVersion,
       "dev.zio"       %% "zio-config"                      % zioConfigVersion,
       "dev.zio"       %% "zio-config-typesafe"             % zioConfigVersion,
       "ch.qos.logback" % "logback-classic"                 % logbackClassicVersion,
