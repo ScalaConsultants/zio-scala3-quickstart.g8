@@ -17,7 +17,7 @@ final class HealthCheckServiceLive(quill: Quill.Postgres[Literal]) extends Healt
   }
     .fold(
       _ => DbStatus(false),
-      _ => DbStatus(true)
+      _ => DbStatus(true),
     )
 
 }
