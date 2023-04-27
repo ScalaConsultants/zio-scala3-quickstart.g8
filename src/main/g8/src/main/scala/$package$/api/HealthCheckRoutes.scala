@@ -3,7 +3,6 @@ package $package$.api
 import $package$.api.healthcheck.HealthCheckService
 import zio._
 import zio.http._
-import zio.http.model.{ Method, Status }
 
 object HealthCheckRoutes:
 

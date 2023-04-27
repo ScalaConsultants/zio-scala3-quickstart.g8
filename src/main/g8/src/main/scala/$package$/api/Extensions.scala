@@ -3,7 +3,6 @@ package $package$.api
 import $package$.domain.ValidationError
 import zio._
 import zio.http._
-import zio.http.model.Status
 import zio.json._
 
 private[api] object Extensions:
@@ -21,7 +20,7 @@ private[api] object Extensions:
     def toResponseZIO(implicit ev: JsonEncoder[T]): UIO[Response] = toResponseZIO(Status.Ok)
 
     def toResponseZIO(status: Status)(implicit ev: JsonEncoder[T]): UIO[Response] = ZIO.succeed {
-      Response.json(data.toJson).setStatus(status)
+      Response.json(data.toJson).withStatus(status)
     }
 
     def toEmptyResponseZIO: UIO[Response] = toEmptyResponseZIO(Status.NoContent)
