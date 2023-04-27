@@ -4,7 +4,6 @@ import $package$.api.Extensions._
 import $package$.domain._
 import zio._
 import zio.http._
-import zio.http.model.Status
 
 private[api] object Utils:
 

@@ -7,7 +7,6 @@ import $package$.application.ItemService
 import $package$.domain._
 import zio._
 import zio.http._
-import zio.http.model.{ Method, Status }
 import zio.json._
 
 object HttpRoutes extends JsonSupport:

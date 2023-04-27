@@ -2,7 +2,6 @@ package $package$.api
 
 import $package$.api.healthcheck.HealthCheckServiceTest
 import zio.http._
-import zio.http.model.{ Headers, Method, Status }
 import zio.test._
 import zio.test.Assertion._
 
