@@ -2,7 +2,7 @@ package $package$
 
 import $package$.api._
 import $package$.api.healthcheck._
-import $package$.config.Configuration._
+import $package$.config.Configuration.ApiConfig
 import $package$.infrastructure._
 import io.getquill.jdbczio.Quill
 import io.getquill.Literal
@@ -25,9 +25,9 @@ object Boot extends ZIOAppDefault:
 
   private val serverLayer =
     ZLayer
-      .service[ServerConfig]
+      .service[ApiConfig]
       .flatMap { cfg =>
-        Server.defaultWithPort(cfg.get.port)
+        Server.defaultWith(_.binding(cfg.get.host, cfg.get.port))
       }
       .orDie
 
@@ -39,7 +39,7 @@ object Boot extends ZIOAppDefault:
     program.provide(
       healthCheckServiceLayer,
       serverLayer,
-      ServerConfig.layer,
+      ApiConfig.layer,
       repoLayer,
       postgresLayer,
       dataSourceLayer,
