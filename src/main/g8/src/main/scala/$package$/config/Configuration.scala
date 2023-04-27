@@ -1,23 +1,22 @@
 package $package$.config
 
-import $package$.config.Configuration.ServerConfig
 import com.typesafe.config.ConfigFactory
 import zio._
 import zio.config._
 import zio.config.ConfigDescriptor._
-import zio.config.ConfigSource._
 import zio.config.typesafe.TypesafeConfigSource
 
 object Configuration:
 
-  final case class ServerConfig(port: Int)
+  final case class ApiConfig(host: String, port: Int)
 
-  object ServerConfig:
+  object ApiConfig:
 
     private val serverConfigDescription =
       nested("api") {
-        int("port").default(8090)
-      }.to[ServerConfig]
+        string("host") <*>
+        int("port")
+      }.to[ApiConfig]
 
     val layer = ZLayer(
       read(
