@@ -7,7 +7,7 @@ val postgresqlVersion     = "42.6.0"
 val testContainersVersion = "0.40.15"
 val zioMockVersion        = "1.0.0-RC11"
 val zioHttpVersion        = "3.0.0-RC1"
-val quillVersion          = "4.6.0"
+val quillVersion          = "4.6.1"
 
 // This build is for this Giter8 template.
 // To test the template run `g8` or `g8Test` from the sbt session.
