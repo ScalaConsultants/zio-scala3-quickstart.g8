@@ -15,7 +15,7 @@ object Configuration:
     private val serverConfigDescription =
       nested("api") {
         string("host") <*>
-        int("port")
+          int("port")
       }.to[ApiConfig]
 
     val layer = ZLayer(
