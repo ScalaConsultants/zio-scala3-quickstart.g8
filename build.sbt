@@ -6,7 +6,7 @@ val logbackClassicVersion = "1.4.7"
 val postgresqlVersion     = "42.6.0"
 val testContainersVersion = "0.40.15"
 val zioMockVersion        = "1.0.0-RC11"
-val zioHttpVersion        = "3.0.0-RC1"
+val zioHttpVersion        = "3.0.0-RC3"
 val quillVersion          = "4.6.0"
 
 // This build is for this Giter8 template.
