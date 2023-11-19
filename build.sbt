@@ -5,7 +5,7 @@ val zioConfigVersion      = "3.0.7"
 val logbackClassicVersion = "1.4.7"
 val postgresqlVersion     = "42.6.0"
 val testContainersVersion = "0.40.15"
-val zioMockVersion        = "1.0.0-RC11"
+val zioMockVersion        = "1.0.0-RC12"
 val zioHttpVersion        = "3.0.0-RC1"
 val quillVersion          = "4.6.0"
 
