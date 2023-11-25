@@ -11,73 +11,82 @@ import zio.json._
 
 object HttpRoutes extends JsonSupport:
 
-  val app: HttpApp[ItemRepository, Nothing] = Http.collectZIO {
-    case Method.GET -> !! / "items" =>
-      val effect: ZIO[ItemRepository, DomainError, List[Item]] =
-        ItemService.getAllItems()
+  val app: HttpApp[ItemRepository] =
+    Routes(
+      Method.GET / "items" ->
+        handler {
+          val effect: ZIO[ItemRepository, DomainError, List[Item]] =
+            ItemService.getAllItems()
 
-      effect.foldZIO(Utils.handleError, _.toResponseZIO)
+          effect.foldZIO(Utils.handleError, _.toResponseZIO)
+        },
 
-    case Method.GET -> !! / "items" / itemId =>
-      val effect: ZIO[ItemRepository, DomainError, Item] =
-        for {
-          id        <- Utils.extractLong(itemId)
-          maybeItem <- ItemService.getItemById(ItemId(id))
-          item      <- maybeItem
-                         .map(ZIO.succeed(_))
-                         .getOrElse(ZIO.fail(NotFoundError))
-        } yield item
+      Method.GET / "items" / long("itemId") ->
+        handler { (id: Long, req: Request) =>
+          val effect: ZIO[ItemRepository, DomainError, Item] =
+            for {
+              maybeItem <- ItemService.getItemById(ItemId(id))
+              item <- maybeItem
+                .map(ZIO.succeed(_))
+                .getOrElse(ZIO.fail(NotFoundError))
+            } yield item
 
-      effect.foldZIO(Utils.handleError, _.toResponseZIO)
+          effect.foldZIO(Utils.handleError, _.toResponseZIO)
+        },
 
-    case Method.DELETE -> !! / "items" / itemId =>
-      val effect: ZIO[ItemRepository, DomainError, Unit] =
-        for {
-          id     <- Utils.extractLong(itemId)
-          amount <- ItemService.deleteItem(ItemId(id))
-          _      <- if (amount == 0) ZIO.fail(NotFoundError)
-                    else ZIO.unit
-        } yield ()
+      Method.DELETE / "items" / long("itemId") ->
+        handler { (id: Long, req: Request) =>
+          val effect: ZIO[ItemRepository, DomainError, Unit] =
+            for {
+              amount <- ItemService.deleteItem(ItemId(id))
+              _ <- if (amount == 0) ZIO.fail(NotFoundError)
+              else ZIO.unit
+            } yield ()
 
-      effect.foldZIO(Utils.handleError, _.toEmptyResponseZIO)
+          effect.foldZIO(Utils.handleError, _.toEmptyResponseZIO)
+        },
 
-    case req @ Method.POST -> !! / "items" =>
-      val effect: ZIO[ItemRepository, DomainError, Item] =
-        for {
-          createItem <- req.jsonBodyAs[CreateItemRequest]
-          itemId     <- ItemService.addItem(createItem.name, createItem.price)
-        } yield Item(itemId, createItem.name, createItem.price)
+      Method.POST / "items" ->
+        handler { (req: Request) =>
+          val effect: ZIO[ItemRepository, DomainError, Item] =
+            for {
+              createItem <- req.jsonBodyAs[CreateItemRequest]
+              itemId <- ItemService.addItem(createItem.name, createItem.price)
+            } yield Item(itemId, createItem.name, createItem.price)
 
-      effect.foldZIO(Utils.handleError, _.toResponseZIO(Status.Created))
+          effect.foldZIO(Utils.handleError, _.toResponseZIO(Status.Created))
+        },
 
-    case req @ Method.PUT -> !! / "items" / itemId =>
-      val effect: ZIO[ItemRepository, DomainError, Item] =
-        for {
-          id         <- Utils.extractLong(itemId)
-          updateItem <- req.jsonBodyAs[UpdateItemRequest]
-          maybeItem  <- ItemService.updateItem(ItemId(id), updateItem.name, updateItem.price)
-          item       <- maybeItem
-                          .map(ZIO.succeed(_))
-                          .getOrElse(ZIO.fail(NotFoundError))
-        } yield item
+      Method.PUT / "items" / long("itemId") ->
+        handler { (id: Long, req: Request) =>
+          val effect: ZIO[ItemRepository, DomainError, Item] =
+            for {
+              updateItem <- req.jsonBodyAs[UpdateItemRequest]
+              maybeItem <- ItemService.updateItem(ItemId(id), updateItem.name, updateItem.price)
+              item <- maybeItem
+                .map(ZIO.succeed(_))
+                .getOrElse(ZIO.fail(NotFoundError))
+            } yield item
 
-      effect.foldZIO(Utils.handleError, _.toResponseZIO)
+          effect.foldZIO(Utils.handleError, _.toResponseZIO)
+        },
 
-    case req @ Method.PATCH -> !! / "items" / itemId =>
-      val effect: ZIO[ItemRepository, DomainError, Item] =
-        for {
-          id                <- Utils.extractLong(itemId)
-          partialUpdateItem <- req.jsonBodyAs[PartialUpdateItemRequest]
-          maybeItem         <- ItemService.partialUpdateItem(
-                                 id = ItemId(id),
-                                 name = partialUpdateItem.name,
-                                 price = partialUpdateItem.price,
-                               )
-          item              <- maybeItem
-                                 .map(ZIO.succeed(_))
-                                 .getOrElse(ZIO.fail(NotFoundError))
-        } yield item
+      Method.PATCH / "items" / long("itemId") ->
+        handler { (id: Long, req: Request) =>
+          val effect: ZIO[ItemRepository, DomainError, Item] =
+            for {
+              partialUpdateItem <- req.jsonBodyAs[PartialUpdateItemRequest]
+              maybeItem <- ItemService.partialUpdateItem(
+                id = ItemId(id),
+                name = partialUpdateItem.name,
+                price = partialUpdateItem.price,
+              )
+              item <- maybeItem
+                .map(ZIO.succeed(_))
+                .getOrElse(ZIO.fail(NotFoundError))
+            } yield item
 
-      effect.foldZIO(Utils.handleError, _.toResponseZIO)
+          effect.foldZIO(Utils.handleError, _.toResponseZIO)
+        }
+    ).toHttpApp
 
-  }
