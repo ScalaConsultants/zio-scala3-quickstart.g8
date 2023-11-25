@@ -11,7 +11,7 @@ object HealthCheckRoutesSpec extends ZIOSpecDefault:
     suite("health check")(
       test("ok status") {
         val actual =
-          HealthCheckRoutes.app.runZIO(Request.get(URL(!! / "healthcheck")))
+          HealthCheckRoutes.app.runZIO(Request.get(URL(Root / "healthcheck")))
         assertZIO(actual)(equalTo(Response(Status.Ok, Headers.empty, Body.empty)))
       }
     )
