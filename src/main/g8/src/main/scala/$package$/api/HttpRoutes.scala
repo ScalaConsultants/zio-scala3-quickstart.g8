@@ -11,7 +11,7 @@ import zio.json._
 
 object HttpRoutes extends JsonSupport:
 
-  val app: HttpApp[ItemRepository, Nothing] = Http.collectZIO {
+  val app: HttpApp[ItemRepository] = Http.collectZIO {
     case Method.GET -> !! / "items" =>
       val effect: ZIO[ItemRepository, DomainError, List[Item]] =
         ItemService.getAllItems()

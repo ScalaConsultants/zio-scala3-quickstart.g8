@@ -6,7 +6,7 @@ import zio.http._
 
 object HealthCheckRoutes:
 
-  val app: HttpApp[HealthCheckService, Nothing] = Http.collectZIO {
+  val app: HttpApp[HealthCheckService] = Http.collectZIO {
 
     case Method.HEAD -> !! / "healthcheck" =>
       ZIO.succeed {
