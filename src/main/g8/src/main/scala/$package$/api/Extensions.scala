@@ -20,7 +20,7 @@ private[api] object Extensions:
     def toResponseZIO(implicit ev: JsonEncoder[T]): UIO[Response] = toResponseZIO(Status.Ok)
 
     def toResponseZIO(status: Status)(implicit ev: JsonEncoder[T]): UIO[Response] = ZIO.succeed {
-      Response.json(data.toJson).withStatus(status)
+      Response.json(data.toJson).status(status)
     }
 
     def toEmptyResponseZIO: UIO[Response] = toEmptyResponseZIO(Status.NoContent)

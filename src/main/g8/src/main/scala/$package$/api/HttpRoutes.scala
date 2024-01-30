@@ -11,14 +11,15 @@ import zio.json._
 
 object HttpRoutes extends JsonSupport:
 
-  val app: HttpApp[ItemRepository, Nothing] = Http.collectZIO {
-    case Method.GET -> !! / "items" =>
+  val app: HttpApp[ItemRepository] = Routes(
+    Method.GET / "items"                       -> handler { (_: Request) =>
       val effect: ZIO[ItemRepository, DomainError, List[Item]] =
         ItemService.getAllItems()
 
       effect.foldZIO(Utils.handleError, _.toResponseZIO)
 
-    case Method.GET -> !! / "items" / itemId =>
+    },
+    Method.GET / "items" / string("itemId")    -> handler { (itemId: String, _: Request) =>
       val effect: ZIO[ItemRepository, DomainError, Item] =
         for {
           id        <- Utils.extractLong(itemId)
@@ -30,7 +31,8 @@ object HttpRoutes extends JsonSupport:
 
       effect.foldZIO(Utils.handleError, _.toResponseZIO)
 
-    case Method.DELETE -> !! / "items" / itemId =>
+    },
+    Method.DELETE / "items" / string("itemId") -> handler { (itemId: String, _: Request) =>
       val effect: ZIO[ItemRepository, DomainError, Unit] =
         for {
           id     <- Utils.extractLong(itemId)
@@ -41,7 +43,8 @@ object HttpRoutes extends JsonSupport:
 
       effect.foldZIO(Utils.handleError, _.toEmptyResponseZIO)
 
-    case req @ Method.POST -> !! / "items" =>
+    },
+    Method.POST / "items"                      -> handler { (req: Request) =>
       val effect: ZIO[ItemRepository, DomainError, Item] =
         for {
           createItem <- req.jsonBodyAs[CreateItemRequest]
@@ -50,7 +53,8 @@ object HttpRoutes extends JsonSupport:
 
       effect.foldZIO(Utils.handleError, _.toResponseZIO(Status.Created))
 
-    case req @ Method.PUT -> !! / "items" / itemId =>
+    },
+    Method.PUT / "items" / string("itemId")    -> handler { (itemId: String, req: Request) =>
       val effect: ZIO[ItemRepository, DomainError, Item] =
         for {
           id         <- Utils.extractLong(itemId)
@@ -63,7 +67,8 @@ object HttpRoutes extends JsonSupport:
 
       effect.foldZIO(Utils.handleError, _.toResponseZIO)
 
-    case req @ Method.PATCH -> !! / "items" / itemId =>
+    },
+    Method.PATCH / "items" / string("itemId")  -> handler { (itemId: String, req: Request) =>
       val effect: ZIO[ItemRepository, DomainError, Item] =
         for {
           id                <- Utils.extractLong(itemId)
@@ -79,5 +84,5 @@ object HttpRoutes extends JsonSupport:
         } yield item
 
       effect.foldZIO(Utils.handleError, _.toResponseZIO)
-
-  }
+    },
+  ).toHttpApp

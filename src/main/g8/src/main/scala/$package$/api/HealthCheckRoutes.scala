@@ -6,17 +6,16 @@ import zio.http._
 
 object HealthCheckRoutes:
 
-  val app: HttpApp[HealthCheckService, Nothing] = Http.collectZIO {
-
-    case Method.HEAD -> !! / "healthcheck" =>
+  val app: HttpApp[HealthCheckService] = Routes(
+    Method.HEAD / "healthcheck" -> handler { (_: Request) =>
       ZIO.succeed {
         Response.status(Status.NoContent)
       }
-
-    case Method.GET -> !! / "healthcheck" =>
+    },
+    Method.GET / "healthcheck"  -> handler { (_: Request) =>
       HealthCheckService.check.map { dbStatus =>
         if (dbStatus.status) Response.ok
         else Response.status(Status.InternalServerError)
       }
-
-  }
+    },
+  ).toHttpApp
