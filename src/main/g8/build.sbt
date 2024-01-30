@@ -1,13 +1,13 @@
-val zioVersion            = "2.0.13"
-val zioJsonVersion        = "0.5.0"
-val zioConfigVersion      = "3.0.7"
-val zioLoggingVersion     = "2.1.11"
+val zioVersion            = "2.0.21"
+val zioJsonVersion        = "0.6.2"
+val zioConfigVersion      = "4.0.1"
+val zioLoggingVersion     = "2.1.16"
 val logbackClassicVersion = "1.4.7"
 val postgresqlVersion     = "42.6.0"
 val testContainersVersion = "0.40.15"
-val zioMockVersion        = "1.0.0-RC11"
-val zioHttpVersion        = "3.0.0-RC1"
-val quillVersion          = "4.6.0.1"
+val zioMockVersion        = "1.0.0-RC12"
+val zioHttpVersion        = "3.0.0-RC4"
+val quillVersion          = "4.8.0"
 
 lazy val root = (project in file("."))
   .settings(

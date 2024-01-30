@@ -3,8 +3,9 @@ package $package$.config
 import com.typesafe.config.ConfigFactory
 import zio._
 import zio.config._
-import zio.config.ConfigDescriptor._
-import zio.config.typesafe.TypesafeConfigSource
+import zio.config.typesafe._
+import zio.Config._
+import zio.config.typesafe.TypesafeConfigProvider
 
 object Configuration:
 
@@ -12,17 +13,16 @@ object Configuration:
 
   object ApiConfig:
 
-    private val serverConfigDescription =
-      nested("api") {
-        string("host") <*>
-        int("port")
-      }.to[ApiConfig]
+    private val serverConfigDescription: Config[ApiConfig] =
+      (string("host") zip int("port"))
+        .nested("api")
+        .to[ApiConfig]
 
     val layer = ZLayer(
       read(
         serverConfigDescription.from(
-          TypesafeConfigSource.fromTypesafeConfig(
-            ZIO.attempt(ConfigFactory.defaultApplication())
+          TypesafeConfigProvider.fromTypesafeConfig(
+            ConfigFactory.defaultApplication()
           )
         )
       )
